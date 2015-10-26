@@ -56,7 +56,7 @@ public:
 	MyLinkList(int c, int n) {
 		cap = c;
 		LIST_NUM = n;
-		a = new ListNode[n + c]; 
+		a = new ListNode[n + c];
 		for (int i = 0; i < cap + LIST_NUM; ++ i) {
 			a[i].next = i;
 			a[i].prev = i;
