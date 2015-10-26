@@ -5,12 +5,27 @@
 
 class TableNode {
 public:
-	
-}
+	Table* table;
+	Table* next;
+	TableNode(Table* t = NULL) {
+		next = NULL;
+		table = t;
+	}
+};
 
 class Db {
-private:
+public:
+	TableNode* tableHead;
+	TableNode* tableTail;
 
+	void addTable(Table* t) {
+		tableTail->next = t;
+		tableTail = t;
+	}
+
+	Db() {
+		tableHead = NULL;
+	}
 };
 
 #endif
