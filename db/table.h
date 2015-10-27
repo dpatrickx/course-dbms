@@ -52,19 +52,56 @@ public:
 
 		// init first page
 		int index;
-		pageNum = 10;
-		for (int i = 9;i >= 0;i--)
+		pageNum = 32;
+		for (int i = 31;i >= 0;i--)
 			BufType b = bpm->allocPage(_fileID, i, index, false);
-		b[0] = 10;
+		b[0] = 31;
 		b[1] = 0;
 		bpm->markDirty(index);
 	}
 
-	int writeItem() {
-		
+	int writeItem(Vector<Type> vec) {
+		int index;
+		BufType b = bpm->allocPage(_fileID, 0, index, false);
+		access(index);
 		// find a available page on the first page's bitmap
+		// allocate 32 pages at each time, so the pageNum must be 32n
+		int num = pageNum/32;
+		int empthPage = 1;
+		for (int i = 1; i <= num; i++) {
+			int temp = b[i];
+			if (b == -1) {
+				empthPage += 32;
+				continue;
+			}
+			for (int j = 31; j >= 0; j--) {
+				if (!(temp>>j & 1)) {
+					empthPage += (31-j);
+					goto writeFlag1;
+				}
+			}
+		}
+	writeFlag1:
 		// find a available slot on the page's bitmap
+		BufType b = bpm->allocPage(_fileID, empthPage, index, true);
+		markDirty(index);
+		int empthRid = 0;;
+		for (int i = 2048-bitSize; i < bitSize; i++) {
+			int temp = b[i];
+			if (b == -1) {
+				empthRid += 32;
+				continue;
+			}
+			for (int j = 31; j >= 0; j--) {
+				if (!(temp>>j & 1)) {
+					empthRid += (31-j);
+					goto writeFlag2;
+				}
+			}
+		}
+	writeFlag1:
 		// writeItem
+		_writeItem(empthPage, empthRid, vec);
 		// update the bit map
 		return 1;
 	}
