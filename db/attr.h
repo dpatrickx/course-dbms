@@ -7,6 +7,7 @@ using namespace std;
 
 class Attr {
 public:
+	int length;
 	map<string, int> attributes;
 	map<string, int>::iterator iter;
 
