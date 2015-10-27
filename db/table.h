@@ -28,7 +28,7 @@ private:
 		int index;
 		BufType b = bpm->getPage(_fileID, pageID, index);
 		bpm->markDirty(index);
-		int pos = 0;
+		int pos = rID*length;
 		for (int i = 0;i < vec.size(); i++)
 			vec[i].write(b, pos);
 	}
@@ -95,6 +95,8 @@ public:
 			for (int j = 31; j >= 0; j--) {
 				if (!(temp>>j & 1)) {
 					empthRid += (31-j);
+					// put the empty slot bit to be 1
+					temp |= (1<<j);
 					goto writeFlag2;
 				}
 			}
@@ -106,16 +108,29 @@ public:
 		return 1;
 	}
 
-	int removeItem() {
+	int removeItem(int pageID, int rID) {
+		// only put the slot bit to be 0
+		int index;
+		BufType b = bpm->allocPage(_fileID, i, index, false);
+		markDirty(index);
 
+		int pos = 2048 - bitSize;
+		pos += (rID/32);
+		int temp = b[pos];
+		pos %= 32;
+		temp &= (~(1<<(31-pos)));
 	}
 
-	int updateItem() {
-
+	int updateItem(int pageID, int rID, Vector<Type> vec) {
+		_writeItem(pageID, rID, vec);
+		// remember to mark the bit to be 1
 	}
 
-	int getItem() {
-
+	BufType getItem(int pageID, int rID) {
+		int index;
+		BufType b = bpm->allocPage(_fileID, i, index, false);
+		access(index);
+		return b+(length*rID);
 	}
 };
 
