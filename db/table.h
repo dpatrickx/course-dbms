@@ -15,7 +15,7 @@ using namespace std;
 //		last n/8 Bytes - bit map for each data slot
 
 class Table {
-private:
+public:
 	int _fileID;
 	int length;		// length of item
 	int slotNum;	// number of data slot
@@ -32,7 +32,7 @@ private:
 		for (int i = 0;i < vec.size(); i++)
 			vec[i].write(b, pos);
 	}
-public:
+
 	Table(Attr a, int file, BufPageManager* b) {
 		attr = a;
 		bpm = b;
