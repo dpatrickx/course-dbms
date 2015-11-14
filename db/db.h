@@ -5,20 +5,20 @@
 
 class TableNode {
 public:
-	Table* table;
-	Table* next;
-	TableNode(Table* t = NULL) {
+	Table table;
+	TableNode* next;
+	TableNode(Table t = NULL) {
 		next = NULL;
 		table = t;
 	}
 };
 
-class Db {
+class D {
 public:
 	TableNode* tableHead;
 	TableNode* tableTail;
 
-	void addTable(Table* t) {
+	void addTable(Table t) {
 		tableTail->next = t;
 		tableTail = t;
 	}
@@ -26,6 +26,19 @@ public:
 	Db() {
 		tableHead = NULL;
 	}
+
+	Table getTable(int fileID){
+		TableNode* temp = tableHead;
+		while(temp != NULL){
+			if(temp->table._fileID == fileID){
+				return temp;
+			}
+			temp = temp->next;
+		}
+		return NULL;
+	}
+
+	void setSQL(){}
 };
 
 #endif

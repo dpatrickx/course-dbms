@@ -17,12 +17,12 @@ public:
 	Receiver(string c, FileManager* fm) : sentence(c), fm(fm) {}
 };
 
-virtual class Sql{
+class Sql{
 public:
 	virtual void work() {}
 };
 
-class CreateSql : Sql {
+class CreateSql : public Sql {
 public:
 	void work() {
 		Table table();
