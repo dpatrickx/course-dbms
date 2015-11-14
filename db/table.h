@@ -40,16 +40,16 @@ public:
 		length = a.length;
 		_fileID = file;
 		// slotNum - number of slot
-		// bitNum - number of bitmap bits; bitSize - number of bitmap bytes
+		// bitNum - number of bitmap bits
+		// bitSize - bitNum/8
 		slotNum = 8192/length;
-		int bitNum = (8192-initNum*length)*8;
+		int bitNum = (8192-slotNum*length)*8;
 		if (bitNum < slotNum) {
-			int delta = (slotNum-bitNum)/(8*length)+1;
+			int delta = (slotNum-bitNum)/(8*length+1)+1;
 			slotNum -= delta;
-			bitNum += delta*8;
+			bitNum += delta*8*length;
 		}
 		bitSize = bitNum/8;
-
 		// init first page
 		int index;
 		pageNum = 32;
@@ -61,31 +61,32 @@ public:
 	}
 
 	int writeItem(Vector<Type> vec) {
+		// get the first page -- page0
 		int index;
-		BufType b = bpm->allocPage(_fileID, 0, index, false);
+		BufType b = bpm->getPage(_fileID, 0, index, false);
 		access(index);
 		// find a available page on the first page's bitmap
 		// allocate 32 pages at each time, so the pageNum must be 32n
 		int num = pageNum/32;
-		int empthPage = 1;
+		int emptyPage = 1;
 		for (int i = 1; i <= num; i++) {
 			int temp = b[i];
 			if (b == -1) {
-				empthPage += 32;
+				emptyPage += 32;
 				continue;
 			}
 			for (int j = 31; j >= 0; j--) {
 				if (!(temp>>j & 1)) {
-					empthPage += (31-j);
+					emptyPage += (31-j);
 					goto writeFlag1;
 				}
 			}
 		}
 	writeFlag1:
 		// find a available slot on the page's bitmap
-		BufType b = bpm->allocPage(_fileID, empthPage, index, true);
+		BufType b = bpm->getPage(_fileID, emptyPage, index, true);
 		markDirty(index);
-		int empthRid = 0;;
+		int emptyRid = 0;;
 		for (int i = 2048-bitSize; i < bitSize; i++) {
 			int temp = b[i];
 			if (b == -1) {
@@ -101,9 +102,9 @@ public:
 				}
 			}
 		}
-	writeFlag1:
+	writeFlag2:
 		// writeItem
-		_writeItem(empthPage, empthRid, vec);
+		_writeItem(emptyPage, emptyRid, vec);
 		// update the bit map
 		return 1;
 	}
@@ -111,7 +112,7 @@ public:
 	int removeItem(int pageID, int rID) {
 		// only put the slot bit to be 0
 		int index;
-		BufType b = bpm->allocPage(_fileID, i, index, false);
+		BufType b = bpm->getPage(_fileID, i, index, false);
 		markDirty(index);
 
 		int pos = 2048 - bitSize;
@@ -128,7 +129,7 @@ public:
 
 	BufType getItem(int pageID, int rID) {
 		int index;
-		BufType b = bpm->allocPage(_fileID, i, index, false);
+		BufType b = bpm->getPage(_fileID, i, index, false);
 		access(index);
 		return b+(length*rID);
 	}
