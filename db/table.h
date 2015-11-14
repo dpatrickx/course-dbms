@@ -28,7 +28,7 @@ private:
 		int index;
 		BufType b = bpm->getPage(_fileID, pageID, index);
 		bpm->markDirty(index);
-		int pos = rID*length;
+		int pos = rID*length; // posth byte of the page
 		for (int i = 0;i < vec.size(); i++)
 			vec[i].write(b, pos);
 	}
