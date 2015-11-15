@@ -3,6 +3,7 @@
 
 #include "../bufmanager/BufPageManager.h"
 #include "type.h"
+#include <iostream>
 #include <vector>
 using namespace std;
 
@@ -17,6 +18,7 @@ using namespace std;
 class Table {
 public:
 	int _fileID;
+	string name;
 	int length;		// length of item
 	int slotNum;	// number of data slot
 	int bitSize;	// number of bitmap bytes in the end of page
@@ -33,7 +35,8 @@ public:
 			vec[i].write(b, pos);
 	}
 
-	Table(Attr a, int file, BufPageManager* b) {
+	Table(Attr a, int file, BufPageManager* b, string n) {
+		name = n;
 		attr = a;
 		bpm = b;
 		// a data slot's length
@@ -132,6 +135,11 @@ public:
 		BufType b = bpm->getPage(_fileID, i, index, false);
 		access(index);
 		return b+(length*rID);
+	}
+
+	void display() {
+		cout<<name<<endl;
+		attr.display();
 	}
 };
 
