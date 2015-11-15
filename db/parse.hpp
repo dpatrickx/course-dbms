@@ -40,7 +40,7 @@ public:
 
 	void work() {
 		if (startWith(sentence, "create database ")) {
-			string name = a.erase(0, 16);
+			string name = sentence.erase(0, 16);
 			dbNameQue.insert(name);
 			// create dir
 			status = mkdir(rootPath+name, S_IRWXU|S_IRWXG|S_IRWXG|S_IXOTH);
@@ -50,12 +50,12 @@ public:
 		}
 
 		if (startWith(sentence, "use database ")) {
-			curDbName = a.erase(0, 13);
+			curDbName = sentence.erase(0, 13);
 			currDB = databases[name];
 		}
 
 		if (startWith(sentence, "drop database ")) {
-			string name = a.erase(0, 14);
+			string name = sentence.erase(0, 14);
 			dbNameQue.remove(name);
 			if (curDbName == name)
 				curDbName = "";
@@ -64,13 +64,13 @@ public:
 		}
 
 		if (startWith(startWith, "show database ")) {
-			string name = a.erase(0, 14);
+			string name = sentence.erase(0, 14);
 			DB* tempDB = databases[name];
 			tempDB.display();
 		}
 
 		if (startWith(sentence, "create table ")) {
-			string sen = a.erase(0, 13);
+			string sen = sentence.erase(0, 13);
 			// create file
 			int fileID;
 			fm->createFile(rootPath+curDbName+'/'+name);
@@ -79,18 +79,24 @@ public:
 			Attr attr = new Attr(sen);
 			// create table
 			Table* t = new Table(attr, fileID, fm, attr.tableName);
-			currDB.addTable(t);
+			currDB.addTable(t, attr.tableName);
 			// create index file
 		}
 
 		if (startWith(sentence, "drop table ")) {
-			string name;
+			string name = sentence.erase(0, 11);
+			Table* table = currDB->getTable(name);
+			currDB->removeTable(name);
 			// delete data file
-			// delete index files
+			// delete relevent index files
+			// remove from DB
+			delete table;
 		}
 
 		if (startWith(sentence, "show table ")) {
-			string name = 
+			string name = sentence.erase(0, 11);
+			Table* table = currDB->getTable(name);
+			table->attr.display();
 		}
 	}
 ;

@@ -22,45 +22,30 @@ public:
 	map<string, Table*> tables;
 	string name;
 
-
-	void addTable(Table* t) {
-		TableNode* temp = TableNode(t);
-		if (tableHead == NULL)
-			tableHead = tableTail = temp;
-		else {
-			tableTail->next = temp;
-			tableTail = temp;
-		}
+	void addTable(Table* t, string n) {
+		databases.insert(map<string, DB*>::value_type(n, t));
+		tableNameQue.insert(n);
 	}
 
 	void display() {
-		cout<<name<<endl;
-		TableNode* temp = tableHead;
-		while (1) {
-			if (temp != NULL)
-				cout<<temp->table->name<<endl;
-			if (temp == tableTail)
-				break;
-			temp = temp->next;
-		}
+		map<string, Table*> iter;
+		for (iter = tables.begin();iter != tables.end();iter++)
+			cout<<iter->first<<endl;
+	}
+
+	Table* getTable(string name) {
+		return tables[name];
+	}
+
+	Table* removeTable(string name) {
+		tableNameQue.remove(name);
+		tables.remove(name);
 	}
 
 	DB(string n) {
 		name = n;
 	}
 
-	Table getTable(int fileID){
-		TableNode* temp = tableHead;
-		while(temp != NULL){
-			if(temp->table._fileID == fileID){
-				return temp;
-			}
-			temp = temp->next;
-		}
-		return NULL;
-	}
-
-	void setSQL(){}
 };
 
 #endif

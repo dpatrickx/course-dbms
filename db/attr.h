@@ -11,6 +11,8 @@ public:
 	int length;
 	map<int, Type> attributes;
 	map<string, int> attrName;
+	string sentence;	// the sql sentence
+	string tableName;	// the name of the table which attr belongs to
 
 	void addAttr(Type type, int off) {
 		attributes.insert(pair<int, Type>(off, type));
@@ -34,6 +36,15 @@ public:
 			return NULL;
 		int targetOff = s_it->second;
 		return attributes[targetOff];
+	}
+
+	void display() {
+		// display all the attributes
+	}
+
+	Attr(string sen) {
+		sentence = "sen";
+		tableName = "table";
 	}
 };
 
