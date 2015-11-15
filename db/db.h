@@ -2,6 +2,8 @@
 #define DB_H
 
 #include "table.h"
+#include "map.h"
+#include "../utils/PriQueue.h"
 
 class TableNode {
 public:
@@ -13,18 +15,36 @@ public:
 	}
 };
 
-class Db {
+class DB {
 public:
-	TableNode* tableHead;
-	TableNode* tableTail;
+	PriQueue<string> tableNameQue;
+	map<string, Table*> tables;
+	string name;
 
 	void addTable(Table* t) {
-		tableTail->next = t;
-		tableTail = t;
+		TableNode* temp = TableNode(t);
+		if (tableHead == NULL)
+			tableHead = tableTail = temp;
+		else {
+			tableTail->next = temp;
+			tableTail = temp;
+		}
 	}
 
-	Db() {
-		tableHead = NULL;
+	void display() {
+		cout<<name<<endl;
+		TableNode* temp = tableHead;
+		while (1) {
+			if (temp != NULL)
+				cout<<temp->table->name<<endl;
+			if (temp == tableTail)
+				break;
+			temp = temp->next;
+		}
+	}
+
+	DB(string n) {
+		name = n;
 	}
 };
 
