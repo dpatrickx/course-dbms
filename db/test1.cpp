@@ -9,8 +9,8 @@ int trave_dir(char* path, int depth)
 {
     DIR *d; //声明一个句柄
     struct dirent *file; //readdir函数的返回值就存放在这个结构体中
-    struct stat sb;    
-    
+    struct stat sb;
+
     if(!(d = opendir(path)))
     {
         printf("error opendir %s!!!\n",path);
