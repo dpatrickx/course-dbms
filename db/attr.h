@@ -3,6 +3,7 @@
 
 #include <map>
 #include <cstring>
+#include <iostream>
 #include "type.h"
 using namespace std;
 

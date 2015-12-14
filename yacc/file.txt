@@ -1,0 +1,8 @@
+select * from test1 inner join test2;
+select * from test1 inner join test2 on test1.id = test2.id1;
+select * from test1 inner join test2 on test1.id = test2.id;
+select * from test1 right join test2 on test1.id = test2.id;
+select * from test1 left join test2 on test1.id = test2.id;
+select * from test1 inner join test2 on test1.id = test2.id where test1.name = 'str1';
+select * from test1 right join test2 on test1.id = test2.id where test1.name = 'str1';
+select * from test1 left join test2 on test1.id = test2.id where test1.name = 'str1';
