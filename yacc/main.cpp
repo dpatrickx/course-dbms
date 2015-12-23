@@ -3,7 +3,7 @@
 
 int main()
 {
-    const char* sFile = "test.sql";
+    const char* sFile = "file.txt";
     FILE* fp = fopen(sFile, "r");
     if(fp == NULL)
     {

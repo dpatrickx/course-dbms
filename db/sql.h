@@ -9,35 +9,125 @@ using namespace std;
 class Sql{
 public:
     virtual void work() {}
+    virtual void display() {}
 };
 
-class CreateSql : public Sql {
+class UseSql : public Sql {
 public:
-    void work() {
-        //Table table();
+    string tbName;
+    UseSql() {}
+    UseSql(string d) {
+        tbName = d;
     }
 
-    CreateSql(string sen, int file) {
+    void init(string d) {
+        tbName = d;
+    }
+    void display() {
+        cout<<"use database "<<tbName<<endl;
+    }
+};
+
+class DropSql : public Sql {
+public:
+    string tbName;
+    int type; // 0 - create immediately, 1 - judge if exists
+    DropSql() {}
+    DropSql(string d, int t = 0) {
+        tbName = d;
+        type = t;
+    }
+
+    void init(string d, int t = 0) {
+        tbName = d;
+        type = t;
+    }
+    void display() {
+        if (type)
+            cout<<"drop databaes if exists "<<tbName<<endl;
+        else
+            cout<<"drop databaes "<<tbName<<endl;
+    }
+};
+
+class TableCon{
+public:
+    vector<string> name;
+    vector<string> type;
+    vector<bool>   notNull;
+    string priKey;
+
+    TableCon() {}
+
+    void init(vector<string> n, vector<string> t, string p) {
+        name = n;
+        type = t;
+        priKey = p;
+    }
+
+    void display() {
+        cout<<"attr size is "<<name.size()<<endl;
+        for (int i = 0; i < name.size(); i++) {
+            cout<<i<<" :";
+            cout<<name[i]<<' '<<type[i]<<' '<<notNull[i]<<endl;
+        }
+        cout<<"primary key is "<<priKey<<endl;
+    }
+};
+class CreateSql : public Sql {
+public:
+    TableCon content;
+    string name;
+
+    CreateSql() {}
+    CreateSql(string n, TableCon c) {
         // get attr
-        work();
+        content = c;
+        name = n;
+    }
+
+    void init(string n, TableCon c) {
+        // get attr
+        content = c;
+        name = n;
+    }
+    void display() {
+        cout<<"-------------------\n";
+        cout<<"table name is "<<name<<endl;
+        content.display();
     }
 };
 
 class InsertSql : public Sql {
 public:
     string tableName;
-    vector<string> valueSqls;
+    vector<string> tableitems;
+    vector<vector<string> > valueSqls;
 
-    InsertSql(string tab, vector<string> val) {
+    InsertSql() {}
+    InsertSql(string tab, vector<string> ite, vector<vector<string> > val) {
         valueSqls = val;
+        tableitems = ite;
         tableName = tab;
     }
 
+    void init(string tab, vector<string> ite, vector<vector<string> > val) {
+        valueSqls = val;
+        tableitems = ite;
+        tableName = tab;
+    }
     void display() {
         cout<<"insert into table -- "<<tableName<<endl;
-        cout<<"size -- "<<valueSqls.size()<<endl;
-        for (int i = 0;i < valueSqls.size();i++)
-            cout<<valueSqls[i]<<endl;
+        cout<<"item size is "<<tableitems.size()<<endl;
+        for (int i = 0;i < tableitems.size();i++) {
+            cout<<tableitems[i]<<endl;
+        }
+        cout<<"value size is "<<valueSqls.size()<<endl;
+        for (int i = 0;i < valueSqls.size();i++) {
+            for (int j = 0;j < valueSqls[i].size();j++)
+                cout<<valueSqls[i][j]<<' ';
+            cout<<endl;
+        }
     }
 
 };
@@ -46,7 +136,7 @@ class SeleItem {
 public:
     string tableName;
     string attrName;
-
+    SeleItem() {}
     SeleItem(string s1, string s2) {
         tableName = s1;
         attrName = s2;
@@ -59,7 +149,7 @@ public:
     string tableName;
     string attrName;
     string expression;
-
+    CondItem() {}
     CondItem(string j, string t, string a, string e) {
         judeop = j;
         tableName = t;
@@ -80,12 +170,13 @@ public:
     }
 };
 
-class JoinSql : public sql {
+class JoinSql : public Sql {
 public:
     string kind; // left/right/inner
     string iokind; // inner/outer
     string tableName1, tableName2;
     CondSql condition; // on
+    JoinSql() {}
     JoinSql(string n1, string n2, string k, string iok, CondSql con) {
         kind = k;
         iokind = iok;
@@ -108,7 +199,7 @@ public:
     }
 };
 
-class DeteleSql : public sql {
+class DeteleSql : public Sql {
 public:
     string tableName;
     CondSql cond;
@@ -119,7 +210,7 @@ public:
     }
 };
 
-class UpdateSql : public sql {
+class UpdateSql : public Sql {
 public:
     string tableName;
     //vector<string> attrs;

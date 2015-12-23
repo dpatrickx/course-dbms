@@ -1,8 +1,29 @@
-select * from test1 inner join test2;
-select * from test1 inner join test2 on test1.id = test2.id1;
-select * from test1 inner join test2 on test1.id = test2.id;
-select * from test1 right join test2 on test1.id = test2.id;
-select * from test1 left join test2 on test1.id = test2.id;
-select * from test1 inner join test2 on test1.id = test2.id where test1.name = 'str1';
-select * from test1 right join test2 on test1.id = test2.id where test1.name = 'str1';
-select * from test1 left join test2 on test1.id = test2.id where test1.name = 'str1';
+CREATE TABLE publisher (
+  id int(10) NOT NULL,
+  name varchar(100) NOT NULL,
+  state varchar(2),
+  PRIMARY KEY  (id)
+);
+
+CREATE TABLE book (
+  id int(10) NOT NULL,
+  title varchar(100) NOT NULL,
+  authors varchar(200),
+  publisher_id int(10) NOT NULL,
+  copies int(10),
+  pages int(10),
+  PRIMARY KEY  (id)
+);
+
+CREATE TABLE customer (
+  id int(10) NOT NULL,
+  name varchar(25) NOT NULL,
+  gender varchar(1),
+  PRIMARY KEY  (id)
+);
+
+CREATE TABLE orders (
+  customer_id int(10) NOT NULL,
+  book_id int(10) NOT NULL,
+  quantity int(10) NOT NULL
+);

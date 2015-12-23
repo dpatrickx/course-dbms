@@ -12,9 +12,8 @@
 %}
 
 %token<m_sId>  INTEGER
-%token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
-%token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NOTNULL
-%token<m_sId>  KIND IO SELECT FROM WHERE EXPRESSION JOIN ON USE IF EXISTS DROP
+%token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEITEM
+%token<m_sId>  KIND IO SELECT FROM WHERE EXPRESSION JOIN ON USE TABLE IF EXISTS DROP
 %token<m_sId>  JUDEOP CONNOP UPDATE SET
 %token<m_sId>  DELETE
 %token<m_sId>  '+'  '-'  '*'  '/'  '%'  '='  '>'  '<'  '.'
@@ -26,8 +25,6 @@
 %type<m_ins>   insertsql
 %type<m_strv>  tableitems valueitems
 %type<m_vecv>  valuesql
-%type<m_con>   tablecon
-%type<m_cre>   createsql
 %type<m_sId>   valueitem
 
 %start sqllist
@@ -37,7 +34,6 @@ sqllist:
     {}
     | usesql sqllist
     | dropsql sqllist
-    | createsql sqllist
     | insertsql sqllist;
 
 usesql:
@@ -56,38 +52,6 @@ dropsql:
         $$.init($5, 1);
         $$.display();
     }
-
-createsql:
-    CREATE TABLE IDENTIFIER '(' tablecon ';' {
-        $$.init($3, $5);
-        $$.display();
-    };
-tablecon:
-    IDENTIFIER TYPE NOTNULL ',' tablecon {
-        $$ = $5;
-        $$.name.push_back($1);
-        $$.type.push_back($2);
-        $$.notNull.push_back(true);
-    }
-    | IDENTIFIER TYPE ',' tablecon {
-        $$ = $4;
-        $$.name.push_back($1);
-        $$.type.push_back($2);
-        $$.notNull.push_back(false);
-    }
-    | IDENTIFIER TYPE NOTNULL ')' {
-        $$.name.push_back($1);
-        $$.type.push_back($2);
-        $$.notNull.push_back(true);
-    }
-    | IDENTIFIER TYPE ')' {
-        $$.name.push_back($1);
-        $$.type.push_back($2);
-        $$.notNull.push_back(false);
-    }
-    | PRIMARY KEY '(' IDENTIFIER ')' ')' {
-        $$.priKey = $4;
-    };
 
 insertsql:
     INSERT INTO IDENTIFIER '(' tableitems ')' VALUES valuesql {
@@ -127,7 +91,7 @@ valueitems:
     };
 valueitem:
     INTEGER {$$ = $1;}
-    | VALUEIT {$$ = $1;};
+    | YIN IDENTIFIER YIN {$$ = $2;}
 
 %%
 

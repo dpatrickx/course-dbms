@@ -17,14 +17,12 @@ newline     (\r|\n|\r\n)
 digit       ([0-9])
 integer     ({digit}+)
 identifier  ({nondigit}({nondigit}|{digit})*)
-valueitem   ({yin}({other_operator}|{nondigit}|{digit})*+{yin})
 blank_chars ([ \f\r\t\v]+)
 comment     ("--"[^\r\n]*{newline})
 SIMPLE_OPERATOR     ("+"|"-"|"*"|"/"|"%"|"="|"<"|">"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":")
-other_operator      (" "|"("|")"|","|"."|":"|"-")
+other_operator      (" "|"("|")"|",")
 EXPRESSION  ([{SIMPLE_OPERATOR}A-Za-z]+)
 yin         ("\'"|"\"")
-type        ({nondigit}*"("{digit}+")")
 %%
 "USE"|"use"                         {   yylval.m_sId = "use";       return USE;         }
 "DROP"|"drop"                       {   yylval.m_sId = "drop";      return DROP;        }
@@ -47,21 +45,9 @@ type        ({nondigit}*"("{digit}+")")
 "DELETE"|"delete"                   {   yylval.m_sId = "delete";    return DELETE;      }
 "SET"|"set"                         {   yylval.m_sId = "set";       return SET;         }
 "UPDATE"|"update"                   {   yylval.m_sId = "update";    return UPDATE;      }
-"CREATE"|"create"                   {   yylval.m_sId = "create";    return CREATE;      }
-"PRIMARY"|"primary"                 {   yylval.m_sId = "primary";   return PRIMARY;     }
-"KEY"|"key"                         {   yylval.m_sId = "key";       return KEY;         }
-"NOT NULL"|"not null"               {   yylval.m_sId = "not null";  return NOTNULL;     }
 {yin}           {
             yylval.m_sId = yytext;
             return YIN;
-}
-{type}          {
-            yylval.m_sId = yytext;
-            return TYPE;
-}
-{valueitem}     {
-            yylval.m_sId = yytext;
-            return VALUEIT;
 }
 {identifier}    {
             yylval.m_sId = yytext;
