@@ -1488,8 +1488,8 @@ yyreduce:
   case 29:
 #line 144 "yacc.y" /* yacc.c:1646  */
     {
-        (yyval.m_strv) = (yyvsp[0].m_strv);
         (yyval.m_strv).push_back((yyvsp[-2].m_sId));
+        (yyval.m_strv).insert((yyval.m_strv).end(), (yyvsp[0].m_strv).begin(), (yyvsp[0].m_strv).end());
     }
 #line 1495 "yacc.tab.c" /* yacc.c:1646  */
     break;
@@ -1505,8 +1505,8 @@ yyreduce:
   case 31:
 #line 152 "yacc.y" /* yacc.c:1646  */
     {
-        (yyval.m_vecv) = (yyvsp[0].m_vecv);
         (yyval.m_vecv).push_back((yyvsp[-3].m_strv));
+        (yyval.m_vecv).insert((yyval.m_vecv).end(), (yyvsp[0].m_vecv).begin(), (yyvsp[0].m_vecv).end());
     }
 #line 1512 "yacc.tab.c" /* yacc.c:1646  */
     break;
@@ -1522,8 +1522,8 @@ yyreduce:
   case 33:
 #line 161 "yacc.y" /* yacc.c:1646  */
     {
-        (yyval.m_strv) = (yyvsp[0].m_strv);
         (yyval.m_strv).push_back((yyvsp[-2].m_sId));
+        (yyval.m_strv).insert((yyval.m_strv).end(), (yyvsp[0].m_strv).begin(), (yyvsp[0].m_strv).end());
     }
 #line 1529 "yacc.tab.c" /* yacc.c:1646  */
     break;

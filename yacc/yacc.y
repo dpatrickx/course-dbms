@@ -142,16 +142,16 @@ insertsql:
     };
 tableitems:
     IDENTIFIER ',' tableitems {
-        $$ = $3;
         $$.push_back($1);
+        $$.insert($$.end(), $3.begin(), $3.end());
     }
     | IDENTIFIER {
         $$.push_back($1);
     };
 valuesql:
     '(' valueitems ')' ',' valuesql {
-        $$ = $5;
         $$.push_back($2);
+        $$.insert($$.end(), $5.begin(), $5.end());
     }
     | '(' valueitems ')' ';'
     {
@@ -159,8 +159,8 @@ valuesql:
     };
 valueitems:
     valueitem ',' valueitems {
-        $$ = $3;
         $$.push_back($1);
+        $$.insert($$.end(), $3.begin(), $3.end());
     }
     | valueitem {
         $$.push_back($1);
