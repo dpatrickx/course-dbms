@@ -30,6 +30,7 @@ int main() {
 		BufType b = bpm->getPage(fileID, pageID, index);
 		cout << b[0] << endl; 		//读取缓存页中第一个整数
 		bpm->access(index); //标记访问
+		bpm->writeBack(index);
 	}
 	return 0;
 }

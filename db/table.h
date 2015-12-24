@@ -2,7 +2,7 @@
 #define TABLE_H
 
 #include "../bufmanager/BufPageManager.h"
-#include "type.h"
+#include "attr.h"
 #include <iostream>
 #include <vector>
 using namespace std;
@@ -26,13 +26,12 @@ public:
 	Attr attr;		// attributes
 	BufPageManager* bpm;
 
-	int _writeItem(int pageID, int rID, Vector<Type> vec) {
+	int _writeItem(int pageID, int rID, Attr attribute) {
 		int index;
 		BufType b = bpm->getPage(_fileID, pageID, index);
 		bpm->markDirty(index);
 		int pos = rID*length; // posth byte of the page
-		for (int i = 0;i < vec.size(); i++)
-			vec[i].write(b, pos);
+		attribute.writeAttr(b, pos);
 	}
 
 	Table(Attr a, int file, BufPageManager* b, string n) {
@@ -63,11 +62,11 @@ public:
 		bpm->markDirty(index);
 	}
 
-	int writeItem(Vector<Type> vec) {
+	int writeItem(Attr attribute) {
 		// get the first page -- page0
 		int index;
 		BufType b = bpm->getPage(_fileID, 0, index, false);
-		access(index);
+		bpm->access(index);
 		// find a available page on the first page's bitmap
 		// allocate 32 pages at each time, so the pageNum must be 32n
 		int num = pageNum/32;
@@ -88,7 +87,7 @@ public:
 	writeFlag1:
 		// find a available slot on the page's bitmap
 		BufType b = bpm->getPage(_fileID, emptyPage, index, true);
-		markDirty(index);
+		bpm->markDirty(index);
 		int emptyRid = 0;;
 		for (int i = 2048-bitSize; i < bitSize; i++) {
 			int temp = b[i];
@@ -107,7 +106,7 @@ public:
 		}
 	writeFlag2:
 		// writeItem
-		_writeItem(emptyPage, emptyRid, vec);
+		_writeItem(emptyPage, emptyRid, attribute);
 		// update the bit map
 		return 1;
 	}
@@ -115,8 +114,8 @@ public:
 	int removeItem(int pageID, int rID) {
 		// only put the slot bit to be 0
 		int index;
-		BufType b = bpm->getPage(_fileID, i, index, false);
-		markDirty(index);
+		BufType b = bpm->getPage(_fileID, pageID, index, false);
+		bpm->markDirty(index);
 
 		int pos = 2048 - bitSize;
 		pos += (rID/32);
@@ -133,7 +132,7 @@ public:
 	BufType getItem(int pageID, int rID) {
 		int index;
 		BufType b = bpm->getPage(_fileID, i, index, false);
-		access(index);
+		bpm->access(index);
 		return b+(length*rID);
 	}
 
