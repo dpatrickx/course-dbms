@@ -16,15 +16,24 @@ using namespace std;
 //      last n/8 Bytes - bit map for each data slot
 
 class Table {
-public:
+private:
     int _fileID;
-    string name;
     int length;     // length of item
     int slotNum;    // number of data slot
     int bitSize;    // number of bitmap bytes in the end of page
     uint pageNum;   // first 4 bytes of first page of the file
-    Attr attr;      // attributes
     BufPageManager* bpm;
+
+    int _writeItem(int pageID, int rID, Attr attribute) {
+        int index;
+        BufType b = bpm->getPage(_fileID, pageID, index);
+        bpm->markDirty(index);
+        int pos = rID*length; // posth byte of the page
+        attribute.writeAttr(b, pos);
+    }
+public:
+    string name;
+    vector<Attr> attrs;
 
     int _writeItem(int pageID, int rID, Attr attribute) {
         int index;
