@@ -2,9 +2,9 @@
 #define TYPE_H
 
 #include <cstring>
+#include <para.h>
+#include <stdio.h>
 using namespace std;
-
-enum TYPE{INT, CHAR, NUL};
 
 class Type {
 public:
@@ -13,6 +13,7 @@ public:
 	Type(int len) : length(len) {}
 	virtual int write(uint*, int&) = 0;
 	virtual int getType() = 0;
+	virtual void display() = 0;
 };
 
 class Null : public Type {
@@ -25,6 +26,9 @@ public:
 	}
 	virtual int getType(){
 		return NUL;
+	}
+	virtual void display(){
+		printf("NULL\n");
 	}
 };
 
@@ -46,21 +50,31 @@ public:
 	virtual int getType(){
 		return CHAR;
 	}
+	virtual void display(){
+		printf("%s\n", str);
+	}
 };
 
-class Integer : public Varchar {
+class Integer : public Type {
 public:
-	Integer (string value, int len) : Varchar(value, len) {}
+	int value;
+	int number;
+	Integer (int value, int len) : Type(4) {
+		this.value = value;
+		number = len;
+	}
 	virtual int write(uint* b, int& pos) {
 		char* bb = (char*) b;
 	    bb += pos;
-	    for (int i = 0;i < len;i++) {
-	        *(bb+i) = str[i];
-	    }
+	    uint* bbb = (uint*) bb;
+	    *(bbb) = value;
 	    pos += length;
 	}
 	virtual int getType(){
 		return INT;
+	}
+	virtual void display(){
+		printf("%s\n", str);
 	}
 };
 
