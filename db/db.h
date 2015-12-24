@@ -1,50 +1,37 @@
+// database class
+// author: dpatrickx
+
 #ifndef DB_H
 #define DB_H
 
 #include "table.h"
-#include "map.h"
+#include "sql.h"
 #include "../utils/PriQueue.h"
-
-class TableNode {
-public:
-	Table table;
-	TableNode* next;
-	TableNode(Table t = NULL) {
-		next = NULL;
-		table = t;
-	}
-};
-
+#include "map.h"
 
 class DB {
+private:
+    table* getTable(string name) {
+        return tbMap[name];
+    }
 public:
-	PriQueue<string> tableNameQue;
-	map<string, Table*> tables;
-	string name;
+    PriQueue<string> tbName;
+    map<string, table*> tbMap;
 
-	void addTable(Table* t, string n) {
-		databases.insert(map<string, DB*>::value_type(n, t));
-		tableNameQue.insert(n);
-	}
+    DB() {}
 
-	void display() {
-		map<string, Table*> iter;
-		for (iter = tables.begin();iter != tables.end();iter++)
-			cout<<iter->first<<endl;
-	}
+    void createTable(string n) {
+        if (tbMap.count(n)) {
+            printf("ERROR 1050 (42S01): Table '%s' already exists\n", n);
+            return;
+        }
+        
+        tbName.insert(n);
+        tbMap.insert(map<string, table*>::value_type(n, t));
+    }
 
-	Table* getTable(string name) {
-		return tables[name];
-	}
+    void dropTable(string n) {}
 
-	Table* removeTable(string name) {
-		tableNameQue.remove(name);
-		tables.remove(name);
-	}
-
-	DB(string n) {
-		name = n;
-	}
 
 };
 

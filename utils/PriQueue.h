@@ -1,3 +1,6 @@
+// base class of priQueue
+// author: dpatrickx
+
 #ifndef PRIQUEUE_H
 #define PRIQUEUE_H
 

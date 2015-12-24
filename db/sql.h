@@ -1,6 +1,7 @@
 #ifndef SQL_H
 #define SQL_H
 
+#include "table.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -21,6 +22,8 @@ public:
     void init(string n) {
         dbName = n;
     }
+
+    void work() {}
 
     void display() {
         cout<<"create database "<<dbName<<endl;
@@ -71,34 +74,14 @@ public:
     }
 };
 
-class TableCon{
-public:
-    vector<string> name;
-    vector<string> type;
-    vector<bool>   notNull;
-    string priKey;
-
-    TableCon() {}
-
-    void init(vector<string> n, vector<string> t, string p) {
-        name = n;
-        type = t;
-        priKey = p;
-    }
-
-    void display() {
-        cout<<"attr size is "<<name.size()<<endl;
-        for (int i = 0; i < name.size(); i++) {
-            cout<<i<<" :";
-            cout<<name[i]<<' '<<type[i]<<' '<<notNull[i]<<endl;
-        }
-        cout<<"primary key is "<<priKey<<endl;
-    }
-};
 class CreateTbSql : public Sql {
 public:
     TableCon content;
     string name;
+
+    void work() {
+
+    }
 
     CreateTbSql() {}
     CreateTbSql(string n, TableCon c) {
