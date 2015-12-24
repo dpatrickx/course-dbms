@@ -1,17 +1,11 @@
-select * from table1;   -- yes SelectSql
-select * from table1 where id = 3 and class = 'hello';
-select tb1.attr1, tb2.attr1 from table1;
-select * from table1 inner join table2;
-select * from table1 inner join table2 on test1.attr1 = test2.attr2 and test1.attr2 < test1.attr2;
-select * from test1 left outer join test2 on test1.id = test2.id where test1.name = 'str1';
-select test1.attr1 from test1 left join test2 on test1.id = test2.id where test1.name = 'str1';-- databaser sql
-create database test; -- yes CreateDbSql
-drop database test;   -- yes DropDbSql
-use database test;    -- yes UseDbSql
+-- databaser sql
+create database test;	-- yes CreateDbSql
+drop database test;		-- yes DropDbSql
+use database test;		-- yes UseDbSql
 USE orderDB;
-show database test;   -- yes ShowDbSql
+show database test;		-- yes ShowDbSql
 -- table sql
-drop table publisher;   -- yes DropTbSql
+drop table publisher;		-- yes DropTbSql
 CREATE TABLE publisher (    -- yes CreateTbSql
   id int(10) NOT NULL,
   name varchar(100) NOT NULL,
@@ -27,7 +21,7 @@ CREATE TABLE book (
   pages int(10),
   PRIMARY KEY  (id)
 );
-show table publisher;   -- yes ShowTbSql
+show table publisher;		-- yes ShowTbSql
 -- insert sql
 INSERT INTO book values     -- yes InsertSql
  (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
@@ -46,6 +40,7 @@ select * from table1 inner join table2;
 select * from table1 inner join table2 on test1.attr1 = test2.attr2 and test1.attr2 < test1.attr2;
 select * from test1 left outer join test2 on test1.id = test2.id where test1.name = 'str1';
 select test1.attr1 from test1 left join test2 on test1.id = test2.id where test1.name = 'str1';
+select * from tb1, tb2, tb3 where tb1.attr1 = tb2.attr1 and tb1.attr2 < tb2.attr2;
 
 -- delete sql
 delete from test2 where id>3 and class>'str4';
@@ -55,7 +50,7 @@ delete from test2 where id=-1+1 and class<'str6';
 delete from test2 where id=id+1 and class<'str6';
 
 -- update sql
-update test2 set id = 1;  -- set all id to 1
+update test2 set id = 1;	-- set all id to 1
 update test2 set id = id + 1;
 update test2 set id = 1001 where id1 = 1;
 update test2 set id = 1001 where id1 > 3;

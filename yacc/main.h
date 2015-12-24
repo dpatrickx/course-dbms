@@ -15,16 +15,32 @@ struct Type
     char m_cOp;
     vector<string> m_strv;
     vector<vector<string> > m_vecv;
-    CondSql m_cons;
-    CondItem m_coni;
-    vector<SeleItem> m_selv;
-    SeleItem m_sel;
-    JoinSql m_joi;
-    UseSql m_use;
-    DropSql m_drop;
-    CreateSql m_cre;
-    InsertSql m_ins;
+
+    UseDbSql m_usedb;
+    ShowDbSql m_showdb;
+    CreateDbSql m_credb;
+    DropDbSql m_dropdb;
+
+    CreateTbSql m_cretb;
+    DropTbSql m_droptb;
+    ShowTbSql m_showtb;
+
     TableCon m_con;
+    InsertSql m_ins;
+
+    SelectSql m_sel;
+    JoinSql m_join;
+    CondSql m_cond;
+    vector<AttrItem> m_attr;
+    Expression m_expr;
+    AttrItem m_sitem;
+    CondItem m_citem;
+
+    DeteleSql m_dele;
+
+    UpdateSql m_upda;
+    vector<CondItem> m_set;
+
     Sql m_sql;
 };
 
