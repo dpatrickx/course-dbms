@@ -225,6 +225,8 @@ public:
         b[pos] &= (~(1<<(31-pos)));
     }
 
+    //search
+    //equal->condition, attribute->used for update
     int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
         for(int i = 0; i < 32; i++){
             int index;
@@ -248,11 +250,11 @@ public:
                             map<string, int>::iterator it;
                             for(it = offset.begin(); it != offset.end(); it++){
                                 int t = example.getAttr(it->first).getType();
-                                if(t == INT){
+                                if(t == INTEGER){
                                     cout << it->first << ": ";
                                     cout << (*(uint*)(position + it->second)) << endl;
                                 }
-                                else if(t == CHAR){
+                                else if(t == STRING){
                                     cout << it->first << ": ";
                                     for(int k = 0; k < example.getAttr(it->first).length; k++){
                                         cout << (*(position + it->second + k));
@@ -281,11 +283,11 @@ public:
                             map<string, int>::iterator it;
                             for(it = offset.begin(); it != offset.end(); it++){
                                 int t = example.getAttr(it->first).getType();
-                                if(t == INT){
+                                if(t == INTEGER){
                                     cout << it->first << ": ";
                                     cout << (*(uint*)(position + it->second)) << endl;
                                 }
-                                else if(t == CHAR){
+                                else if(t == STRING){
                                     cout << it->first << ": ";
                                     for(int k = 0; k < example.getAttr(it->first).length; k++){
                                         cout << (*(position + it->second + k));
@@ -301,6 +303,64 @@ public:
                         }
                     }
                 }
+            }
+        }
+    }
+
+    void insert(vector<string> items, vector<vector<string>> value){
+        if(items.size() == 0){
+            for(int i = 0; i < value.size(); i++){
+                Attr* writeItem = new Attr();
+                map<string, int>::iterator it = offset.begin();
+                for(int j = 0; j < value[i].size(); j++){
+                    string itemName = it->first;
+                    Type exam = example.getAttr(itemName);
+                    int type = exam.getType();
+                    if(type == INTEGER){
+                        int val = atoi(value[i][j].c_str());
+                        (Integer)exam.value = val;
+                        writeItem->addAttr(exam, itemName);
+                    }
+                    else if(type == STRING){
+                        string val = value[i][j];
+                        (Varchar)exam.str = val;
+                        writeItem->addAttr(exam, itemName);
+                    }
+                    it++;
+                }
+                writeItem(*writeItem);
+            }
+        }
+        else{
+            for(int i = 0; i < value.size(); i++){
+                Attr* writeItem = new Attr();
+                for(map<string, int>::iterator it = offset.begin(); it != end; it++){
+                    string itemName = it->first;
+                    bool exist = 0;
+                    for(int j = 0; j < items.size(); j++){
+                        if(items[j] == itemName){
+                            Type exam = example.getAttr(itemName);
+                            int type = exam.getType();
+                            if(type == INTEGER){
+                                int val = atoi(value[i][j].c_str());
+                                (Integer)exam.value = val;
+                                writeItem->addAttr(exam, itemName);
+                            }
+                            else if(type == STRING){
+                                string val = value[i][j];
+                                (Varchar)exam.str = val;
+                                writeItem->addAttr(exam, itemName);
+                            }
+                            exist = 1;
+                            break;
+                        }
+                    }
+                    if(!exist){
+                        Type* null = new Null();
+                        writeItem.addAttr(null, itemName);
+                    }
+                }
+                writeItem(*writeItem);
             }
         }
     }
