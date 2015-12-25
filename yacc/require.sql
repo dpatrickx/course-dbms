@@ -23,7 +23,7 @@ CREATE TABLE book (
 );
 show table publisher;		-- yes ShowTbSql
 -- insert sql
-INSERT INTO book values     -- yes InsertSql
+INSERT INTO book(item1, item2) values     -- yes InsertSql
  (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
  (200002,'Standing in the Shadows','Richard Bruce Wright',101787,2900,1860),
  (200003,'Children of the Thunder','Carlo DEste',102928,3447,2154),

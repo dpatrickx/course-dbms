@@ -12,7 +12,7 @@
 %}
 
 %token<m_sId>  INTEGER
-%token<m_sId>  DATABASE SHOW
+%token<m_sId>  DATABASE SHOW DATABASES TABLES
 %token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
 %token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NOTNULL
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
@@ -78,9 +78,15 @@ dropdbsql:
         $$.display();
     };
 showdbsql:
-    SHOW DATABASE IDENTIFIER ';' {
+    SHOW DATABASES ';' {
+        $$.init("");
+        $$.display();
+        $$.work();
+    }
+    | SHOW DATABASE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     };
 createdbsql:
     CREATE DATABASE IDENTIFIER ';' {
@@ -94,9 +100,15 @@ droptbsql:
         $$.display();
     };
 showtbsql:
-    SHOW TABLE IDENTIFIER ';' {
+    SHOW TABLES ';' {
+        $$.init("");
+        $$.display();
+        $$.work();
+    }
+    | SHOW TABLE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     };
 createtbsql:
     CREATE TABLE IDENTIFIER '(' tablecon ';' {

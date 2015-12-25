@@ -8,10 +8,11 @@
 #define CREATEDB 0
 #define SHOWDB 1
 #define DROPDB 2
-#define CREATETB 3
-#define SHOWTB 4
-#define UPDATE 5
-#define DELETE 6
-#define SELECT 7
+#define USEDB 3
+#define CREATETB 4
+#define SHOWTB 5
+#define DROPTB 6
+#define INSERT 7
+#define SELECT 8
 
 #endif

@@ -56,6 +56,8 @@ yin         ("\'"|"\"")
 "KEY"|"key"                         {   yylval.m_sId = "key";       return KEY;         }
 "NOT NULL"|"not null"               {   yylval.m_sId = "not null";  return NOTNULL;     }
 "DATABASE"|"database"               {   yylval.m_sId = "database";  return DATABASE;    }
+"DATABASES"|"databases"             {   yylval.m_sId = "databases"; return DATABASES;   }
+"TABLES"|"tables"                   {   yylval.m_sId = "tables";    return TABLES:      }
 "SHOW"|"show"                       {   yylval.m_sId = "show";      return SHOW;        }
 "INT"|"int"                         {   yylval.m_sId = "int";       return TYPE;        }
 "VARCHAR"|"varchar"                 {   yylval.m_sId = "varchar";   return TYPE;        }
