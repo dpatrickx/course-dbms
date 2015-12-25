@@ -20,14 +20,14 @@ public:
 
     DB() {}
 
-    void createTable(string n) {
+    void createTb(TableCon c, string n) {
         if (tbMap.count(n)) {
             printf("ERROR 1050 (42S01): Table '%s' already exists\n", n);
             return;
         }
-        
+        Table table(c, n);
         tbName.insert(n);
-        tbMap.insert(map<string, table*>::value_type(n, t));
+        tbMap.insert(map<string, table*>::value_type(n, &table));
     }
 
     void dropTable(string n) {}

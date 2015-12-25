@@ -57,7 +57,14 @@ public:
         dbMap.remove(name);
     }
 
-    void dbWork(int type) {
+    void work(TableCon c, string n) {
+        if (currDbName == "") {
+            printf("ERROR 1046 (3D000): No database selected\n");
+            return;
+        }
+        currDb->createTb(c, n);
+    }
+    void work(int type) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;

@@ -1,15 +1,22 @@
 #ifndef SQL_H
 #define SQL_H
 
+#include "para.h"
 #include "table.h"
+#include "dbManager.h"
 #include <iostream>
 #include <string>
 #include <vector>
 using namespace std;
 
+static DBManager* manager;
+
 class Sql{
 public:
-    virtual void work() {}
+    int sqlType;
+    void work() {
+        manager->work(sqlType);
+    }
     virtual void display() {}
 };
 
@@ -17,7 +24,9 @@ class CreateDbSql : public Sql {
 public:
     string dbName;
 
-    CreateDbSql() {}
+    CreateDbSql() {
+        sqlType = CREATEDB;
+    }
 
     void init(string n) {
         dbName = n;
@@ -33,7 +42,9 @@ public:
 class UseDbSql : public Sql {
 public:
     string dbName;
-    UseDbSql() {}
+    UseDbSql() {
+        sqlType = USEDB;
+    }
     UseDbSql(string d) {
         dbName = d;
     }
@@ -49,7 +60,9 @@ public:
 class DropDbSql : public Sql {
 public:
     string dbName;
-    DropDbSql() {}
+    DropDbSql() {
+        sqlType = DROPDB;
+    }
     DropDbSql(string d) {
         dbName = d;
     }
@@ -64,6 +77,9 @@ public:
 
 class ShowDbSql : public Sql {
 public:
+    ShowDbSql() {
+        sqlType = SHOWDB;
+    }
     string dbName;
     void init(string n) {
         dbName = n;
@@ -80,10 +96,12 @@ public:
     string name;
 
     void work() {
-
+        manager->work(content, name);
     }
 
-    CreateTbSql() {}
+    CreateTbSql() {
+        sqlType = CREATETB;
+    }
     CreateTbSql(string n, TableCon c) {
         // get attr
         content = c;
@@ -105,7 +123,9 @@ class ShowTbSql : public Sql {
 public:
     string tbName;
 
-    ShowTbSql() {}
+    ShowTbSql() {
+        sqlType = SHOWTB;
+    }
 
     void init(string n) {
         tbName = n;
@@ -118,7 +138,9 @@ class DropTbSql : public Sql {
 public:
     string tbName;
 
-    DropTbSql() {}
+    DropTbSql() {
+        sqlType = DROPTB;
+    }
 
     void init(string n) {
         tbName = n;
@@ -135,7 +157,9 @@ public:
     vector<string> tableitems;
     vector<vector<string> > valueSqls;
 
-    InsertSql() {}
+    InsertSql() {
+        sqlType = INSERTDB;
+    }
     InsertSql(string tab, vector<string> ite, vector<vector<string> > val) {
         valueSqls = val;
         tableitems = ite;
@@ -341,7 +365,9 @@ public:
     JoinSql join;
     CondSql cond;
 
-    SelectSql() {}
+    SelectSql() {
+        sqlType = SELECT;
+    }
     SelectSql(vector<AttrItem> a, string t, JoinSql j, CondSql c) {
         attrs = a;
         tb1 = t;
@@ -375,7 +401,9 @@ class DeteleSql : public Sql {
 public:
     string tableName;
     CondSql cond;
-    DeteleSql() {}
+    DeteleSql() {
+        sqlType = DELETE;
+    }
     DeteleSql(string t, CondSql c) {
         tableName = t;
         cond = c;
@@ -399,7 +427,9 @@ public:
     CondSql cond;   // where clause
     vector<CondItem> set;
 
-    UpdateSql() {}
+    UpdateSql() {
+        sqlType = UPDATE;
+    }
     UpdateSql(string n, CondSql c, vector<CondItem> s) {
         tableName = n;
         cond = c;
