@@ -9,10 +9,9 @@
 #define SHOWDB 1
 #define DROPDB 2
 #define CREATETB 3
-#define UPDATE 4
-#define DELETE 5
-#define SELECT 6
-
-#define SHOWTB
+#define SHOWTB 4
+#define UPDATE 5
+#define DELETE 6
+#define SELECT 7
 
 #endif
