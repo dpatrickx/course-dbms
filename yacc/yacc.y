@@ -14,7 +14,7 @@
 %token<m_sId>  INTEGER
 %token<m_sId>  DATABASE SHOW DATABASES TABLES
 %token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
-%token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NOTNULL
+%token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NUL IS
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
 %token<m_sId>  JOIN ON USE IF EXISTS DROP
 %token<m_sId>  JUDGEOP CONNOP UPDATE SET
@@ -32,7 +32,7 @@
 %type<m_showtb>  showtbsql
 %type<m_con>   tablecon
 %type<m_ins>   insertsql
-%type<m_strv>  tableitems valueitems
+%type<m_strv>  tableitems valueitems tables
 %type<m_vecv>  valuesql
 %type<m_sel>   selectsql
 %type<m_join>  joinsql
@@ -40,7 +40,7 @@
 %type<m_attr>  attrsql
 %type<m_sitem> attritem
 %type<m_citem> conditem
-%type<m_expr>  expression
+%type<m_expr>  expression expr
 %type<m_dele>  deletesql
 %type<m_upda>  updatesql
 %type<m_set>   setsql
@@ -116,15 +116,15 @@ createtbsql:
         $$.display();
     };
 tablecon:
-    IDENTIFIER TYPE '(' INTEGER ')' NOTNULL ',' tablecon {
+    IDENTIFIER TYPE '(' INTEGER ')' CONNOP NUL ',' tablecon {
         $$.length.push_back($4);
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.notNull.push_back(true);
-        $$.length.insert($$.length.end(), $8.length.begin(), $8.length.end());
-        $$.name.insert($$.name.end(), $8.name.begin(), $8.name.end());
-        $$.type.insert($$.type.end(), $8.type.begin(), $8.type.end());
-        $$.notNull.insert($$.notNull.end(), $8.notNull.begin(), $8.notNull.end());
+        $$.length.insert($$.length.end(), $9.length.begin(), $9.length.end());
+        $$.name.insert($$.name.end(), $9.name.begin(), $9.name.end());
+        $$.type.insert($$.type.end(), $9.type.begin(), $9.type.end());
+        $$.notNull.insert($$.notNull.end(), $9.notNull.begin(), $9.notNull.end());
     }
     | IDENTIFIER TYPE '(' INTEGER ')' ',' tablecon {
         $$.length.push_back($4);
@@ -136,15 +136,15 @@ tablecon:
         $$.type.insert($$.type.end(), $7.type.begin(), $7.type.end());
         $$.notNull.insert($$.notNull.end(), $7.notNull.begin(), $7.notNull.end());
     }
-    | IDENTIFIER TYPE NOTNULL ',' tablecon {
+    | IDENTIFIER TYPE CONNOP NUL ',' tablecon {
         $$.length.push_back("0");
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.notNull.push_back(true);
-        $$.length.insert($$.length.end(), $5.length.begin(), $5.length.end());
-        $$.name.insert($$.name.end(), $5.name.begin(), $5.name.end());
-        $$.type.insert($$.type.end(), $5.type.begin(), $5.type.end());
-        $$.notNull.insert($$.notNull.end(), $5.notNull.begin(), $5.notNull.end());
+        $$.length.insert($$.length.end(), $6.length.begin(), $6.length.end());
+        $$.name.insert($$.name.end(), $6.name.begin(), $6.name.end());
+        $$.type.insert($$.type.end(), $6.type.begin(), $6.type.end());
+        $$.notNull.insert($$.notNull.end(), $6.notNull.begin(), $6.notNull.end());
     }
     | IDENTIFIER TYPE ',' tablecon {
         $$.length.push_back("0");
@@ -156,7 +156,7 @@ tablecon:
         $$.type.insert($$.type.end(), $4.type.begin(), $4.type.end());
         $$.notNull.insert($$.notNull.end(), $4.notNull.begin(), $4.notNull.end());
     }
-    | IDENTIFIER TYPE '(' INTEGER ')' NOTNULL ')' {
+    | IDENTIFIER TYPE '(' INTEGER ')' CONNOP NUL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back($4);
@@ -168,7 +168,7 @@ tablecon:
         $$.length.push_back($4);
         $$.notNull.push_back(false);
     }
-    | IDENTIFIER TYPE NOTNULL ')' {
+    | IDENTIFIER TYPE CONNOP NUL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back("0");
@@ -224,24 +224,13 @@ valueitem:
     | VALUEIT {$$ = $1;};
 
 selectsql:
-    SELECT attrsql FROM IDENTIFIER joinsql WHERE condsql ';' {
-        $$.init($2, $4, $5, $7);
+    SELECT attrsql FROM tables WHERE condsql ';' {
+        $$.init($2, $4, $6);
         $$.display();
     }
-    | SELECT attrsql FROM IDENTIFIER joinsql ';' {
+    | SELECT attrsql FROM tables ';' {
         CondSql cond;
-        $$.init($2, $4, $5, cond);
-        $$.display();
-    }
-    | SELECT attrsql FROM IDENTIFIER WHERE condsql ';' {
-        JoinSql join;
-        $$.init($2, $4, join, $6);
-        $$.display();
-    }
-    | SELECT attrsql FROM IDENTIFIER ';' {
-        CondSql cond;
-        JoinSql join;
-        $$.init($2, $4, join, cond);
+        $$.init($2, $4, cond);
         $$.display();
     };
 attrsql:
@@ -262,6 +251,14 @@ attritem:
     }
     | IDENTIFIER '.' IDENTIFIER {
         $$.init($1, $3);
+    };
+tables:
+    IDENTIFIER ',' tables {
+        $$.push_back($1);
+        $$.insert($$.end(), $3.begin(), $3.end());
+    }
+    | IDENTIFIER {
+        $$.push_back($1);
     };
 joinsql:
     KIND IOKIND JOIN IDENTIFIER {
@@ -295,31 +292,104 @@ condsql:
         $$.conditions.push_back($1);
     };
 conditem:
-    attritem JUDGEOP attritem expression {
-        $$.init($2, $1, $3, $4);
+    attritem IS NUL {
+        AttrItem attr2;
+        Expression expre;
+        expre.str = "NULL";
+        $$.init("=", $1, attr2, expre);
+    }
+    | attritem IS CONNOP NUL {
+        AttrItem attr2;
+        Expression expre;
+        expre.str = "NULL";
+        $$.init(">", $1, attr2, expre);
     }
     | attritem JUDGEOP expression {
         AttrItem attr2;
         $$.init($2, $1, attr2, $3);
+    }
+    | attritem JUDGEOP attritem exprop INTEGER {
+        Expression expre;
+        expre.numbers.push_back($5);
+        expre.ops.push_back($4);
+        expre.value = 0;
+        $$.init($2, $1, $3, expre);
+    }
+    | attritem JUDGEOP attritem {
+        Expression expre;
+        $$.init($2, $1, $3, expre);
     };
 expression:
     {}
     | VALUEIT {
         $$.str = $1;
     }
-    | expression exprop expression {
+    | expression '+' expr {
         $$ = $1;
         $$.ops.push_back($2);
         $$.numbers.insert($$.numbers.end(), $3.numbers.begin(), $3.numbers.end());
         $$.ops.insert($$.ops.end(), $3.ops.begin(), $3.ops.end());
+        $$.value = $1.value+$3.value;
     }
-    | exprop expression {
+    | expression '-' expr {
+        $$ = $1;
+        $$.ops.push_back($2);
+        $$.numbers.insert($$.numbers.end(), $3.numbers.begin(), $3.numbers.end());
+        $$.ops.insert($$.ops.end(), $3.ops.begin(), $3.ops.end());
+        $$.value = $1.value-$3.value;
+    }
+    | '-' expr {
         $$.ops.push_back($1);
         $$.numbers.insert($$.numbers.end(), $2.numbers.begin(), $2.numbers.end());
         $$.ops.insert($$.ops.end(), $2.ops.begin(), $2.ops.end());
+        $$.value = 0-$2.value;
     }
     | INTEGER {
         $$.numbers.push_back($1);
+        $$.transVal($1);
+    }
+    | expr;
+expr:
+    expr '*' INTEGER {
+        $$ = $1;
+        $$.ops.push_back($2);
+        $$.numbers.push_back($3);
+        $$.value = $1.value * atoi($3.c_str());
+    }
+    | expr '/' INTEGER {
+        $$ = $1;
+        $$.ops.push_back($2);
+        $$.numbers.push_back($3);
+        $$.value = $1.value / atoi($3.c_str());
+    }
+    | expr '*' '(' expression ')' {
+        $$ = $1;
+        $$.ops.push_back($2);
+        $$.ops.push_back($3);
+        $$.ops.insert($$.ops.end(), $4.ops.begin(), $4.ops.end());
+        $$.numbers.insert($$.numbers.end(), $4.numbers.begin(), $4.numbers.end());
+        $$.ops.push_back($5);
+        $$.value = $1.value * $4.value;
+    }
+    | expr '/' '(' expression ')' {
+        $$ = $1;
+        $$.ops.push_back($2);
+        $$.ops.push_back($3);
+        $$.ops.insert($$.ops.end(), $4.ops.begin(), $4.ops.end());
+        $$.numbers.insert($$.numbers.end(), $4.numbers.begin(), $4.numbers.end());
+        $$.ops.push_back($5);
+        $$.value = $1.value / $4.value;
+    }
+    | '(' expression ')' {
+        $$.ops.push_back($1);
+        $$.ops.insert($$.ops.end(), $2.ops.begin(), $2.ops.end());
+        $$.numbers.insert($$.numbers.end(), $2.numbers.begin(), $2.numbers.end());
+        $$.ops.push_back($3);
+        $$.value = $2.value;
+    }
+    | INTEGER {
+        $$.numbers.push_back($1);
+        $$.transVal($1);
     };
 exprop:
     '+' { $$ = $1; }

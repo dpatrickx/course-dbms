@@ -216,29 +216,26 @@ public:
 class SelectSql : public Sql {
 public:
     vector<AttrItem> attrs;
-    string tb1;
-    JoinSql join;
+    vector<string> tables;
     CondSql cond;
 
     SelectSql() {
-        sqlType = SELECT;
+
     }
-    SelectSql(vector<AttrItem> a, string t, JoinSql j, CondSql c) {
+    SelectSql(vector<AttrItem> a, vector<string> t, CondSql c) {
         attrs = a;
-        tb1 = t;
-        join = j;
+        tables = t;
+        cond = c;
+    }
+
+    void init(vector<AttrItem> a, vector<string> t, CondSql c) {
+        attrs = a;
+        tables = t;
         cond = c;
     }
 
     void work() {
         manager->tbWork(attrs, tb1, join, cond);
-    }
-
-    void init(vector<AttrItem> a, string t, JoinSql j, CondSql c) {
-        attrs = a;
-        tb1 = t;
-        join = j;
-        cond = c;
     }
 
     void display() {
@@ -249,8 +246,10 @@ public:
             attrs[i].display();
             cout<<endl;
         }
-        cout<<"from "<<tb1<<endl;
-        join.display();
+        cout<<"from\n";
+        for (int i = 0; i < tables.size(); i++)
+            cout<<tables[i]<<' ';
+        cout<<endl;
         cout<<"where\n";
         cond.display();
     }

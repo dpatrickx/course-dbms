@@ -35,23 +35,21 @@ insert into test2(id, class) values(5, 'str5');
 -- select sql, expression only support int, maybe worthy to try support string add
 select * from table1;   -- yes SelectSql
 select * from table1 where id = 3 and class = 'hello';
-select tb1.attr1, tb2.attr1 from table1;
-select * from table1 inner join table2;
-select * from table1 inner join table2 on test1.attr1 = test2.attr2 and test1.attr2 < test1.attr2;
-select * from test1 left outer join test2 on test1.id = test2.id where test1.name = 'str1';
-select test1.attr1 from test1 left join test2 on test1.id = test2.id where test1.name = 'str1';
-select * from tb1, tb2, tb3 where tb1.attr1 = tb2.attr1 and tb1.attr2 < tb2.attr2;
+select attr1, attr2 from table1 where id = 3 and class = 'hello';
+select tb1.attr1, tb2.attr2 from tb1, tb2 where tb1.attr1 = tb2.attr1 and tb1.attr2 < tb2.attr2;
+select * from table1 where attr is null;
+select * from table1 where attr is not null;
 
 -- delete sql
 delete from test2 where id>3 and class>'str4';
-delete from test2 where id=-1 and class<'str6';
+delete from test2 where id=2 and class<'str6';
 delete from test2 where id=1+1+1 and class<'str6';
 delete from test2 where id=-1+1 and class<'str6';
 delete from test2 where id=id+1 and class<'str6';
 
 -- update sql
-update test2 set id = 1;	-- set all id to 1
+update test2 set id = 1 + 1;	-- set all id to 1
 update test2 set id = id + 1;
-update test2 set id = 1001 where id1 = 1;
-update test2 set id = 1001 where id1 > 3;
+update test2 set id = 2 * 3 where id1 = 1;
+update test2 set id = 3+4*5 where id1 > 3;
 

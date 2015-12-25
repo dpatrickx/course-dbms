@@ -37,6 +37,8 @@ yin         ("\'"|"\"")
 "DROP"|"drop"                       {   yylval.m_sId = "drop";      return DROP;        }
 "TABLE"|"table"                     {   yylval.m_sId = "table";     return TABLE;       }
 "IF"|"if"                           {   yylval.m_sId = "if";        return IF;          }
+"IS"|"is"                           {   yylval.m_sId = "is";        return IS;          }
+"NULL"|"null"                       {   yylval.m_sId = "null";      return NUL;        }
 "EXISTS"|"exists"                   {   yylval.m_sId = "exists";    return EXISTS;      }
 "JOIN"|"join"                       {   yylval.m_sId = "join";      return JOIN;        }
 "ON"|"on"                           {   yylval.m_sId = "on";        return ON;          }
@@ -54,10 +56,9 @@ yin         ("\'"|"\"")
 "CREATE"|"create"                   {   yylval.m_sId = "create";    return CREATE;      }
 "PRIMARY"|"primary"                 {   yylval.m_sId = "primary";   return PRIMARY;     }
 "KEY"|"key"                         {   yylval.m_sId = "key";       return KEY;         }
-"NOT NULL"|"not null"               {   yylval.m_sId = "not null";  return NOTNULL;     }
 "DATABASE"|"database"               {   yylval.m_sId = "database";  return DATABASE;    }
 "DATABASES"|"databases"             {   yylval.m_sId = "databases"; return DATABASES;   }
-"TABLES"|"tables"                   {   yylval.m_sId = "tables";    return TABLES:      }
+"TABLES"|"tables"                   {   yylval.m_sId = "tables";    return TABLES;      }
 "SHOW"|"show"                       {   yylval.m_sId = "show";      return SHOW;        }
 "INT"|"int"                         {   yylval.m_sId = "int";       return TYPE;        }
 "VARCHAR"|"varchar"                 {   yylval.m_sId = "varchar";   return TYPE;        }

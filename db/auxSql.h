@@ -25,6 +25,9 @@ public:
         numbers = n;
         ops = o;
     }
+    void transVal(string num) {
+        value = atoi(num.c_str());
+    }
     int isNull() {
         if (numbers.size()==0 and str=="")
             return 1;
@@ -32,15 +35,29 @@ public:
     }
     void display() {
         if (numbers.size() == ops.size()) {
-            for (int i = 0;i < numbers.size();i++)
-                cout<<ops[i]<<' '<<numbers[i]<<' ';
-        } else {
             for (int i = 0;i < numbers.size();i++) {
+                cout<<ops[i]<<' '<<numbers[i]<<' ';
+
+            }
+        } else {
+            int j = 0;
+            for (int i = 0;i < numbers.size();i++) {
+                if (ops[j]=="(") {
+                    cout<<' '<<ops[j]<<' ';
+                    j++;
+                }
                 cout<<numbers[i]<<' ';
-                if (i < ops.size())
-                    cout<<ops[i]<<' ';
+                if (ops[j]==")") {
+                    cout<<' '<<ops[j]<<' ';
+                    j++;
+                }
+                if (j < ops.size()) {
+                    cout<<ops[j]<<' ';
+                    j++;
+                }
             }
         }
+        cout<<"\nvalue = "<<value<<endl;
         if (str != "")
             cout<<str;
     }
