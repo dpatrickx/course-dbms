@@ -4,13 +4,18 @@
 #include <cstring>
 #include <para.h>
 #include <stdio.h>
+#include <stdlib.h>
 using namespace std;
 
 class Type {
 public:
-	int length;
+	int length;		// bytes
+	bool notNull;
 
-	Type(int len) : length(len) {}
+	Type(int l, bool n) {
+		length = l;
+		notNull = n;
+	}
 	virtual int write(uint*, int&) = 0;
 	virtual int getType() = 0;
 	virtual void display() = 0;
@@ -38,7 +43,7 @@ public:
 	Varchar(string value, int len) : Type(len) {
 		str = value;
 	}
-	virtual int write (uint* b, int& pos) {
+	int write (uint* b, int& pos) {
 		// pos - nth byte of page b
 	    char* bb = (char*) b;
 	    bb += pos;
@@ -59,11 +64,10 @@ class Integer : public Type {
 public:
 	int value;
 	int number;
-	Integer (int value, int len) : Type(4) {
-		this.value = value;
-		number = len;
+	Integer (int value, bool n, string len) : Type(4, n) {
+		number = atoi(len.c_str());
 	}
-	virtual int write(uint* b, int& pos) {
+	int write(uint* b, int& pos) {
 		char* bb = (char*) b;
 	    bb += pos;
 	    uint* bbb = (uint*) bb;
@@ -76,6 +80,12 @@ public:
 	virtual void display(){
 		printf("%s\n", str);
 	}
+};
+
+class Bool : public Type {
+public:
+	bool value;
+	void write(uint* b, int& pos) {}
 };
 
 #endif

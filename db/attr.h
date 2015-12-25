@@ -19,9 +19,7 @@ public:
 	void addAttr(Type type, string name) {
 		attributes.insert(pair<string, Type>(name, type));
 	}
-	// void definition(string name, int off){
-	// 	attrName.insert(pair<string, int>(name, off));
-	// }
+
 	bool writeAttr(uint* b, int& pos){
 		map<string, Type>::iterator s_it;
 		bool flag = 0;

@@ -24,7 +24,6 @@ SIMPLE_OPERATOR     ("+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"
 other_operator      (" "|"("|")"|","|"."|":"|"-")
 EXPRESSION  ([{SIMPLE_OPERATOR}A-Za-z]+)
 yin         ("\'"|"\"")
-type        ({nondigit}*"("{digit}+")")
 %%
 ">"                                 {   yylval.m_sId = ">";         return JUDGEOP;     }
 "<"                                 {   yylval.m_sId = "<";         return JUDGEOP;     }
@@ -47,7 +46,8 @@ type        ({nondigit}*"("{digit}+")")
 "SELECT"|"select"                   {   yylval.m_sId = "select";    return SELECT;      }
 "FROM"|"from"                       {   yylval.m_sId = "from";      return FROM;        }
 "WHERE"|"where"                     {   yylval.m_sId = "where";     return WHERE;       }
-"LEFT"|"left"|"RIGHT"|"right"       {   yylval.m_sId = yytext;      return KIND;        }
+"LEFT"|"left"                       {   yylval.m_sId = "left";      return KIND;        }
+"RIGHT"|"right"                     {   yylval.m_sId = "right";     return KIND;        }
 "DELETE"|"delete"                   {   yylval.m_sId = "delete";    return DELETE;      }
 "SET"|"set"                         {   yylval.m_sId = "set";       return SET;         }
 "UPDATE"|"update"                   {   yylval.m_sId = "update";    return UPDATE;      }
@@ -57,13 +57,12 @@ type        ({nondigit}*"("{digit}+")")
 "NOT NULL"|"not null"               {   yylval.m_sId = "not null";  return NOTNULL;     }
 "DATABASE"|"database"               {   yylval.m_sId = "database";  return DATABASE;    }
 "SHOW"|"show"                       {   yylval.m_sId = "show";      return SHOW;        }
+"INT"|"int"                         {   yylval.m_sId = "int";       return TYPE;        }
+"VARCHAR"|"varchar"                 {   yylval.m_sId = "varchar";   return TYPE;        }
+"BOOL"|"bool"                       {   yylval.m_sId = "bool";      return TYPE;        }
 {yin}           {
             yylval.m_sId = yytext;
             return YIN;
-}
-{type}          {
-            yylval.m_sId = yytext;
-            return TYPE;
 }
 {valueitem}     {
             yylval.m_sId = yytext;

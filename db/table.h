@@ -21,6 +21,7 @@ class TableCon{
 public:
     vector<string> name;
     vector<string> type;
+    vector<string> length;
     vector<bool>   notNull;
     string priKey;
 
@@ -51,6 +52,7 @@ private:
     int typeNum;
     uint pageNum;   // first 4 bytes of first page of the file
     BufPageManager* bpm;
+    FileManager* fm;
     Attr example;
     map<string, int> offset;
 
@@ -73,24 +75,45 @@ public:
         attribute.writeAttr(b, pos);
     }
 
-    Table(Attr a, int file, BufPageManager* b, string n) {
+    Table(TableCon c, string n) {
+        // set name
         name = n;
-        example = a;
-        bpm = b;
-        // a data slot's length
-        length = a.length;
-        _fileID = file;
-        int off = 0;
-        typeNum = 0;
-        for(map<string, Type>::iterator it = example.attributes.begin(); it != example.attributes.end(); it++){
-            offset.insert(pair<string, int>(it->first, off));
-            off += it->second.length;
-            typeNum++;
+        // set _fileid
+        fm = new FileManager();
+        fm->createFile((n+".txt").c_str());
+        fm->openFile((n+".txt").c_str(), _fileID);
+        // set bmp
+        bpm = new BufPageManager(fm);
+        // set example, offset
+        Attr ex;
+        ex.tableName = n;
+        int len = 0;
+        for (int i = 0; i < c.name.size(); i++) {
+            string tempType = c.type[i];
+            offset.insert(pair<string, int>(c.name[i], len));
+            if (tempType == "int") {
+                len += 4;
+                Integer type(4, c.notNull[i], c.length[i]);
+                ex.attributes.insert(pair<string, Type>(c.name[i], type));
+            } else if (tempType == "varchar") {
+                int tempLen = atoi(c.length[i].c_str());
+                len += tempLen;
+                Varchar type(tempLen, c.notNull[i]);
+                ex.attributes.insert(pair<string, Type>(c.name[i], type));
+            } else if (tempType == "bool") {
+                len += 1;
+                Bool type(1, c.notNull[i]);
+                ex.attributes.insert(pair<string, Type>(c.name[i], type));
+            }
         }
-        length = length + (typeNum/8 + 1);
-        // slotNum - number of slot
-        // bitNum - number of bitmap bits
-        // bitSize - bitNum/8
+        ex.length = len;
+        example = ex;
+        // set typeNum
+        typeNum = c.name.size();
+        // set length
+        length = ex.len;
+        length += (c.name.size()/8+1);
+        // set slotNum, bitSize
         slotNum = 8192/length;
         int bitNum = (8192-slotNum*length)*8;
         if (bitNum < slotNum) {

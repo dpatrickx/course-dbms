@@ -104,26 +104,68 @@ createtbsql:
         $$.display();
     };
 tablecon:
-    IDENTIFIER TYPE NOTNULL ',' tablecon {
-        $$ = $5;
+    IDENTIFIER TYPE '(' INTEGER ')' NOTNULL ',' tablecon {
+        $$.length.push_back($4);
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.notNull.push_back(true);
+        $$.length.insert($$.length.end(), $8.length.begin(), $8.length.end());
+        $$.name.insert($$.name.end(), $8.name.begin(), $8.name.end());
+        $$.type.insert($$.type.end(), $8.type.begin(), $8.type.end());
+        $$.notNull.insert($$.notNull.end(), $8.notNull.begin(), $8.notNull.end());
     }
-    | IDENTIFIER TYPE ',' tablecon {
-        $$ = $4;
+    | IDENTIFIER TYPE '(' INTEGER ')' ',' tablecon {
+        $$.length.push_back($4);
         $$.name.push_back($1);
         $$.type.push_back($2);
+        $$.notNull.push_back(false);
+        $$.length.insert($$.length.end(), $7.length.begin(), $7.length.end());
+        $$.name.insert($$.name.end(), $7.name.begin(), $7.name.end());
+        $$.type.insert($$.type.end(), $7.type.begin(), $7.type.end());
+        $$.notNull.insert($$.notNull.end(), $7.notNull.begin(), $7.notNull.end());
+    }
+    | IDENTIFIER TYPE NOTNULL ',' tablecon {
+        $$.length.push_back("0");
+        $$.name.push_back($1);
+        $$.type.push_back($2);
+        $$.notNull.push_back(true);
+        $$.length.insert($$.length.end(), $5.length.begin(), $5.length.end());
+        $$.name.insert($$.name.end(), $5.name.begin(), $5.name.end());
+        $$.type.insert($$.type.end(), $5.type.begin(), $5.type.end());
+        $$.notNull.insert($$.notNull.end(), $5.notNull.begin(), $5.notNull.end());
+    }
+    | IDENTIFIER TYPE ',' tablecon {
+        $$.length.push_back("0");
+        $$.name.push_back($1);
+        $$.type.push_back($2);
+        $$.notNull.push_back(false);
+        $$.length.insert($$.length.end(), $4.length.begin(), $4.length.end());
+        $$.name.insert($$.name.end(), $4.name.begin(), $4.name.end());
+        $$.type.insert($$.type.end(), $4.type.begin(), $4.type.end());
+        $$.notNull.insert($$.notNull.end(), $4.notNull.begin(), $4.notNull.end());
+    }
+    | IDENTIFIER TYPE '(' INTEGER ')' NOTNULL ')' {
+        $$.name.push_back($1);
+        $$.type.push_back($2);
+        $$.length.push_back($4);
+        $$.notNull.push_back(true);
+    }
+    | IDENTIFIER TYPE '(' INTEGER ')' ')' {
+        $$.name.push_back($1);
+        $$.type.push_back($2);
+        $$.length.push_back($4);
         $$.notNull.push_back(false);
     }
     | IDENTIFIER TYPE NOTNULL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
+        $$.length.push_back("0");
         $$.notNull.push_back(true);
     }
     | IDENTIFIER TYPE ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
+        $$.length.push_back("0");
         $$.notNull.push_back(false);
     }
     | PRIMARY KEY '(' IDENTIFIER ')' ')' {
