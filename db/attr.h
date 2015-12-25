@@ -48,8 +48,7 @@ public:
 		active = 0;
 	}
 
-	Attr(string sen) {
-		sentence = "sen";
+	Attr() {
 		tableName = "table";
 		active = 1;
 	}
