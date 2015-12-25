@@ -13,8 +13,6 @@ public:
 	map<string, Type> attributes;
 	string tableName;	// the name of the table which attr belongs to
 	bool active;
-	int pageID;
-	int rID;
 
 	void addAttr(Type type, string name) {
 		attributes.insert(pair<string, Type>(name, type));
@@ -23,7 +21,7 @@ public:
 	bool writeAttr(uint* b, int& pos){
 		map<string, Type>::iterator s_it;
 		bool flag = 0;
-		for(s_it = attributes.begin(); s_it != attributes.end(); i++){
+		for(s_it = attributes.begin(); s_it != attributes.end(); s_it++){
 			s_it->second.write(b, pos);
 			flag = 1;
 		}

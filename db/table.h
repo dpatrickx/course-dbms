@@ -4,6 +4,7 @@
 #include "../bufmanager/BufPageManager.h"
 #include "attr.h"
 #include <iostream>
+#include <string.h>
 #include <vector>
 using namespace std;
 
@@ -16,6 +17,8 @@ enum {REMOVE, UPDATE, SHOW}
 // each page(8192 Bytes):
 //      n*length data slot
 //      last n/8 Bytes - bit map for each data slot
+// each item(length bytes):
+//      null bitmap - 0: null, 1: not null
 
 class TableCon{
 public:
@@ -50,30 +53,40 @@ private:
     int slotNum;    // number of data slot
     int bitSize;    // number of bitmap bits in the end of page
     int typeNum;
+    int nullPos;    // offset of null bitmap in each item
     uint pageNum;   // first 4 bytes of first page of the file
     BufPageManager* bpm;
     FileManager* fm;
     Attr example;
     map<string, int> offset;
 
-    int _writeItem(int pageID, int rID, Attr attribute) {
+    // 1. write every Type
+    // 2. write NullBitMap
+    int _writeItem(int pageID, int rID, Attr attr) {
         int index;
         BufType b = bpm->getPage(_fileID, pageID, index);
         bpm->markDirty(index);
         int pos = rID*length; // posth byte of the page
-        attribute.writeAttr(b, pos);
+        attr.writeAttr(b, pos);
+        // after write, pos is at the end of all values/ head of bitmap
+        // change the null-bitmap according to notNull[]
+        map<string, Type>::iterator s_it;
+        int rank = nullPos;
+        int num = 0;
+        for (s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++) {
+            if (s_it->second.notNull)
+                b[rank] |= (1<<(31-num));
+            else
+                b[rank] &= ~(1<<(31-num));
+            num++;
+            if (num == 32) {
+                rank++;
+                num = 0;
+            }
+        }
     }
 public:
     string name;
-    //vector<Attr> attrs;
-
-    int _writeItem(int pageID, int rID, Attr attribute) {
-        int index;
-        BufType b = bpm->getPage(_fileID, pageID, index);
-        bpm->markDirty(index);
-        int pos = rID*length; // posth byte of the page
-        attribute.writeAttr(b, pos);
-    }
 
     Table(TableCon c, string n) {
         // set name
@@ -110,8 +123,9 @@ public:
         example = ex;
         // set typeNum
         typeNum = c.name.size();
-        // set length
-        length = ex.len;
+        // set length, nullPos
+        length = len;
+        nullPos = len;
         length += (c.name.size()/8+1);
         // set slotNum, bitSize
         slotNum = 8192/length;
@@ -125,13 +139,20 @@ public:
         // init first page
         int index;
         pageNum = 32;
-        for (int i = 31;i >= 0;i--)
+        for (int i = 31;i >= 0;i--) {
             BufType b = bpm->allocPage(_fileID, i, index, false);
+            // set array b to 0, b[2048]
+            memest(b, 0, 2048*sizeof(uint));
+        }
         b[0] = 31;
         b[1] = 0;   // 32 pages
         bpm->markDirty(index);
     }
 
+    // write Item:
+    // 1. find an available page
+    // 2. find an available slot, set pageBitMap to 1, check if page is full
+    // 3. _writeItem
     int writeItem(Attr attribute) {
         // get the first page -- page0
         int index;
@@ -188,14 +209,12 @@ public:
         }
     writeFlag2:
         // writeItem
-        attribute.pageID = emptyPage;
-        attribute.rID = emptyRid;
         _writeItem(emptyPage, emptyRid, attribute);
-        //attrs.push_back(attribute);
-        // update the bit map
         return 1;
     }
 
+    // remove Item:
+    // 1. put pageBitMap to 0
     int removeItem(int pageID, int rID) {
         // only put the slot bit to be 0
         int index;
@@ -207,14 +226,6 @@ public:
         int temp = b[pos];
         pos %= 32;
         temp &= (~(1<<(31-pos)));
-        //bitmap
-
-        // vector<Attr>::iterator it;
-        // for(it = attrs.begin(); it != attrs.end(); it++){
-        //     if(it->pageID == pageID && it->rID == rID){
-        //         it->remove();
-        //     }
-        // }
     }
 
     int searchItem(string name, char* equal) {
@@ -242,6 +253,8 @@ public:
         }
     }
 
+    // update Item:
+    // 1. _writeItem
     int updateItem(int pageID, int rID, Attr attribute) {
         // the slot must be written before, only need to rewrite the item
         _writeItem(pageID, rID, attribute);
