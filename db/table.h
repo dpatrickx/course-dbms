@@ -8,8 +8,6 @@
 #include <vector>
 using namespace std;
 
-enum {REMOVE, UPDATE, SHOW}
-
 // one table stored in one file
 // the first page:
 //      4 Bytes: a unsigned int - number of pages
@@ -223,12 +221,11 @@ public:
 
         int pos = slotNum*length;
         pos += (rID/32);
-        int temp = b[pos];
         pos %= 32;
-        temp &= (~(1<<(31-pos)));
+        b[pos] &= (~(1<<(31-pos)));
     }
 
-    int searchItem(string name, char* equal) {
+    int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
         for(int i = 0; i < 32; i++){
             int index;
             BufType b = bpm->getPage(_fileID, i, index);
@@ -240,14 +237,69 @@ public:
                 if(type == INT){
                     uint* bbb = (uint*)bb;
                     if((*bbb) == (*(int*)equal)){
-
+                        if(sel == DELETE){
+                            removeItem(i, j);
+                        }
+                        else if(sel == UPDATE){
+                            updateItem(i, j, attribute);
+                        }
+                        else if(sel == SELECT){
+                            char* position = (char*)b + j*length;
+                            map<string, int>::iterator it;
+                            for(it = offset.begin(); it != offset.end(); it++){
+                                int t = example.getAttr(it->first).getType();
+                                if(t == INT){
+                                    cout << it->first << ": ";
+                                    cout << (*(uint*)(position + it->second)) << endl;
+                                }
+                                else if(t == CHAR){
+                                    cout << it->first << ": ";
+                                    for(int k = 0; k < example.getAttr(it->first).length; k++){
+                                        cout << (*(position + it->second + k));
+                                    }
+                                    cout << endl;
+                                }
+                                else if(t == BOOL){
+                                    cout << it->first << ": ";
+                                    cout << (*(bool*)(position + it->second)) << endl;
+                                }
+                            }
+                            cout << endl;
+                        }
                     }
                 }
                 else if(type == CHAR){
-
-                }
-                else if(type == NUL){
-
+                    if(strncasecmp(bb, equal, len) == 0){
+                        if(sel == DELETE){
+                            removeItem(i, j);
+                        }
+                        else if(sel == UPDATE){
+                            updateItem(i, j, attribute);
+                        }
+                        else if(sel == SELECT){
+                            char* position = (char*)b + j*length;
+                            map<string, int>::iterator it;
+                            for(it = offset.begin(); it != offset.end(); it++){
+                                int t = example.getAttr(it->first).getType();
+                                if(t == INT){
+                                    cout << it->first << ": ";
+                                    cout << (*(uint*)(position + it->second)) << endl;
+                                }
+                                else if(t == CHAR){
+                                    cout << it->first << ": ";
+                                    for(int k = 0; k < example.getAttr(it->first).length; k++){
+                                        cout << (*(position + it->second + k));
+                                    }
+                                    cout << endl;
+                                }
+                                else if(t == BOOL){
+                                    cout << it->first << ": ";
+                                    cout << (*(bool*)(position + it->second)) << endl;
+                                }
+                            }
+                            cout << endl;
+                        }
+                    }
                 }
             }
         }
