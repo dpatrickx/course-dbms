@@ -221,9 +221,8 @@ public:
 
         int pos = slotNum*length;
         pos += (rID/32);
-        int temp = b[pos];
         pos %= 32;
-        temp &= (~(1<<(31-pos)));
+        b[pos] &= (~(1<<(31-pos)));
     }
 
     int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
