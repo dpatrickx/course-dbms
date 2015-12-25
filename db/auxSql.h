@@ -13,9 +13,11 @@ public:
     vector<string> numbers;
     vector<string> ops;
     string str;
+    int value;
 
     Expression() {
         str = "";
+        value = 0;
     }
     Expression(vector<string> n, vector<string> o) {
         numbers = n;
