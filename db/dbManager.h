@@ -76,24 +76,20 @@ public:
             case CREATEDBSQL:
                 db = new DB(n);
                 createDB(db, n);
-                cout<<"createDB("<<n<<")\n";
                 break;
             case SHOWDBSQL:
                 if (n == "")
                     showDBs();
                 else {
                     db = getDB(n);
-                    // db->showTBs();
-                    cout<<"dropTB()\n";
+                    db->showTBs();
                 }
                 break;
             case DROPDBSQL:
-                cout<<"dropDB("<<n<<")\n";
                 dropDB(n);
                 break;
             case USEDBSQL:
                 useDB(n);
-                cout<<"useDB("<<currDbName<<")\n";
                 break;
             default: break;
         }
@@ -106,12 +102,10 @@ public:
         }
         switch(type) {
             case SHOWTBSQL:
-                // currDb->showTBs();
-                cout<<"showTBs()\n";
+                currDb->showTBs();
                 break;
             case DROPTBSQL:
-                // currDb->dropTb(string n);
-                cout<<"dropTB()\n";
+                currDb->dropTb(string n);
                 break;
             default: break;
         }
@@ -122,8 +116,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        // currDb->createTB(c, n);
-        cout<<"createTB()\n";
+        currDb->createTB(c, n);
     }
 
     void tbWork(string name, vector<string> t, vector<vector<string> > v) {
@@ -131,8 +124,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        // currDb->insertTB(t, v);
-        cout<<"insertTBs()\n";
+        currDb->insertTB(t, v);
     }
 
     void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
@@ -140,8 +132,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        // currDb->selectDB(attrs, t, join, cond);
-        cout<<"selectTB()\n";
+        currDb->selectDB(attrs, t, join, cond);
     }
 
     void tbWork(string name, CondSql cond) {
@@ -149,8 +140,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        // currDb->deleteTB(name, cond);
-        cout<<"deleteTB()\n";
+        currDb->deleteTB(name, cond);
     }
 
     void tbWork(string name, vector<CondItem> set, CondSql cond) {
@@ -158,8 +148,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        // currDb->update(name, set, cond);
-        cout<<"update()\n";
+        currDb->update(name, set, cond);
     }
 
     void display() {
