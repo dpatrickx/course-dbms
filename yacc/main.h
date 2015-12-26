@@ -8,7 +8,7 @@
 #include "../db/sql.h"
 using namespace std;
 
-struct Type
+struct YaccType
 {
     string m_sId;
     int m_nInt;
@@ -44,6 +44,6 @@ struct Type
     Sql m_sql;
 };
 
-#define YYSTYPE Type
+#define YYSTYPE YaccType
 
 #endif

@@ -60,15 +60,17 @@ private:
     }
 public:
     string name;
+    string path;    // path/name.txt
     Attr example;
 
-    Table(TableCon c, string n) {
+    Table(TableCon c, string n, string root) {
         // set name
+        path = root;
         name = n;
         // set _fileid
         fm = new FileManager();
-        fm->createFile((n+".txt").c_str());
-        fm->openFile((n+".txt").c_str(), _fileID);
+        fm->createFile((root+"/"+n+".txt").c_str());
+        fm->openFile((root+"/"+n+".txt").c_str(), _fileID);
         // set bmp
         bpm = new BufPageManager(fm);
         // set example, offset

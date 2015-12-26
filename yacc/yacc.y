@@ -294,9 +294,10 @@ joinsql:
     };
 condsql:
     conditem CONNOP condsql {
-        $$ = $3;
         $$.conditions.push_back($1);
         $$.connops.push_back($2);
+        $$.conditions.insert($$.conditions.end(), $3.conditions.begin(), $3.conditions.end());
+        $$.connops.insert($$.connops.end(), $3.connops.begin(), $3.connops.end());
     }
     | conditem {
         $$.conditions.push_back($1);

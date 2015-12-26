@@ -105,7 +105,7 @@ public:
                 currDb->showTBs();
                 break;
             case DROPTBSQL:
-                currDb->dropTb(string n);
+                currDb->dropTB(n);
                 break;
             default: break;
         }
@@ -116,7 +116,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->createTB(c, n);
+        currDb->createTB(c, n, currDbName);
     }
 
     void tbWork(string name, vector<string> t, vector<vector<string> > v) {
@@ -124,7 +124,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->insertTB(t, v);
+        currDb->insertTB(name, t, v);
     }
 
     void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
@@ -132,7 +132,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->selectDB(attrs, t, join, cond);
+        currDb->selectTB(attrs, t, cond);
     }
 
     void tbWork(string name, CondSql cond) {
@@ -156,7 +156,5 @@ public:
             cout<<dbName[i]<<endl;
     }
 };
-
-// DBManager* DBManager::_instance = 0;
 
 #endif

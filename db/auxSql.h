@@ -78,12 +78,12 @@ public:
         } else {
             int j = 0;
             for (int i = 0;i < numbers.size();i++) {
-                if (ops[j]=="(") {
+                if (j<ops.size() && ops[j]=="(") {
                     cout<<' '<<ops[j]<<' ';
                     j++;
                 }
                 cout<<numbers[i]<<' ';
-                if (ops[j]==")") {
+                if (j<ops.size() && ops[j]==")") {
                     cout<<' '<<ops[j]<<' ';
                     j++;
                 }
@@ -93,9 +93,9 @@ public:
                 }
             }
         }
-        cout<<"\nvalue = "<<value<<endl;
         if (str != "")
             cout<<str;
+        cout<<"\nvalue = "<<value<<endl;
     }
 };
 class AttrItem {
@@ -123,7 +123,7 @@ public:
     }
 
     void display() {
-        if (tableName!="" && tableName!="*")
+        if (tableName!="")
             cout<<tableName<<'.'<<attrName;
         else
             cout<<attrName;
@@ -158,13 +158,14 @@ public:
             attr2.display();
         } else {
             attr1.display();
-            cout<<" "<<judgeOp<<' ';
+            cout<<" "<<judgeOp<<" ";
             if (!attr2.isNull()) {
                 attr2.display();
                 cout<<' ';
             }
             expression.display();
         }
+
         cout<<endl;
     }
 };
