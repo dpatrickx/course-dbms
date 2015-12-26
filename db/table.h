@@ -31,7 +31,6 @@ private:
     uint pageNum;   // first 4 bytes of first page of the file
     BufPageManager* bpm;
     FileManager* fm;
-    Attr example;
     map<string, int> offset;
 
     // 1. write every Type
@@ -61,6 +60,7 @@ private:
     }
 public:
     string name;
+    Attr example;
 
     Table(TableCon c, string n) {
         // set name
@@ -81,12 +81,12 @@ public:
             if (tempType == "int") {
                 len += 4;
                 Integer type(4, c.notNull[i], c.length[i]);
-                ex.attributes.insert(pair<string, Type>(c.name[i], type));
+                ex.attributes.insert(pair<string, Integer>(c.name[i], type));
             } else if (tempType == "varchar") {
                 int tempLen = atoi(c.length[i].c_str());
                 len += tempLen;
-                Varchar type("", tempLen, c.notNull[i]);
-                ex.attributes.insert(pair<string, Type>(c.name[i], type));
+                Varchar type("xuhan", tempLen, c.notNull[i]);
+                ex.attributes.insert(pair<string, Varchar>(c.name[i], type));
             } else if (tempType == "bool") {
                 len += 1;
                 Bool type(1, c.notNull[i]);
@@ -122,6 +122,17 @@ public:
         b[0] = 32;
         b[1] = 0;   // 32 pages
         bpm->markDirty(index);
+    }
+
+    void showTB(int pageID){
+        int index;
+        BufType b = bpm->getPage(_fileID, pageID, index);
+        char* bb = (char*)b;
+        for (int i = 0; i < 40; i++) {
+            for (int j = 7; j>= 0; j--)
+                cout<<((bb[i]>>j)&1)<<'-';
+            cout<<endl;
+        }
     }
 
     // write Item:
@@ -227,7 +238,7 @@ public:
     //                         map<string, int>::iterator it;
     //                         for(it = offset.begin(); it != offset.end(); it++){
     //                             int t = example.getAttr(it->first)->getType();
-    //                             if(t == INTEGER){
+    //                             if(t == INTE){
     //                                 cout << it->first << ": ";
     //                                 cout << (*(uint*)(position + it->second)) << endl;
     //                             }
@@ -260,7 +271,7 @@ public:
     //                         map<string, int>::iterator it;
     //                         for(it = offset.begin(); it != offset.end(); it++){
     //                             int t = example.getAttr(it->first)->getType();
-    //                             if(t == INTEGER){
+    //                             if(t == INTE){
     //                                 cout << it->first << ": ";
     //                                 cout << (*(uint*)(position + it->second)) << endl;
     //                             }
@@ -312,7 +323,7 @@ public:
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
-                    if(type == INTEGER){
+                    if(type == INTE){
                         int val = atoi(value[i][j].c_str());
                         ((Integer*)exam)->value = val;
                         writeItems->addAttr(*exam, itemName);
@@ -338,7 +349,7 @@ public:
                             Type* exam = new Type();
                             exam = example.getAttr(itemName);
                             int type = exam->getType();
-                            if(type == INTEGER){
+                            if(type == INTE){
                                 int val = atoi(value[i][j].c_str());
                                 ((Integer*)exam)->value = val;
                                 writeItems->addAttr(*exam, itemName);
@@ -393,7 +404,7 @@ public:
                         Type* temp = new Type();
                         temp = example.getAttr(itemName);
                         int type = temp->getType();
-                        if(type == INTEGER){
+                        if(type == INTE){
                             int val = *((uint*)(bb + offset[itemName]));
                             ((Integer*)temp)->value = val;
                             waitUpdate->addAttr(*temp, itemName);
@@ -411,7 +422,7 @@ public:
                         temp = example.getAttr(set[k].attr1.attrName);
                         int type = temp->getType();
                         if(set[k].attr2.isNull()){
-                            if(type == INTEGER){
+                            if(type == INTE){
                                 ((Integer*)temp)->value = set[k].expression.value;
                             }
                             else if(type == STRING){
@@ -419,7 +430,7 @@ public:
                             }
                         }
                         else if(set[k].expression.isNull()){
-                            if(type == INTEGER){
+                            if(type == INTE){
                                 ((Integer*)temp)->value = ((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
                             }
                             else if(type == STRING){
@@ -463,7 +474,7 @@ public:
             Type* temp = new Type();
             temp = example.getAttr(itemName);
             int type = temp->getType();
-            if(type == INTEGER){
+            if(type == INTE){
                 int val = *((uint*)(bb + offset[itemName]));
                 ((Integer*)temp)->value = val;
                 test->addAttr(*temp, itemName);
@@ -481,7 +492,7 @@ public:
             CondItem item = cond.conditions[i];
             if(item.judgeOp == "="){
                 int type = test->getAttr(item.attr1.attrName)->getType();
-                if(type == INTEGER){
+                if(type == INTE){
                     if(item.expression.isNull()){
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             ((Integer*)test->getAttr(item.attr2.attrName))->value){
@@ -536,7 +547,7 @@ public:
             }
             else{
                 int type = test->getAttr(item.attr1.attrName)->getType();
-                if(type == INTEGER){
+                if(type == INTE){
                     if(item.expression.isNull()){ // attr1 </<=/>/>=attr2
                         if(item.judgeOp == "<"){
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 

@@ -6,33 +6,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 using namespace std;
 
 class Type {
 public:
 	int length;		// bytes
 	bool notNull;
+	int type;
+	int value;
+	string str;
+	int number;
 
-	Type(int l, bool n) {
+	Type(int l, bool n, int t) {
 		length = l;
 		notNull = n;
+		type = t;
 	}
 	Type(){}
-	virtual void write(uint*, int&) {}
-	virtual int getType() {}
-	virtual void display() {}
+	virtual void write(uint* b, int& pos) {
+		if(type == INTE){
+			char* bb = (char*) b;
+		    bb += pos;
+		    uint* bbb = (uint*) bb;
+		    *(bbb) = value;
+		    pos += length;
+		}
+		else if(type == STRING){
+			cout << str << endl << endl;
+			char* bb = (char*) b;
+		    bb += pos;
+		    for (int i = 0;i < str.size();i++) {
+		        *(bb+i) = str[i];
+		    }
+		    pos += length;
+		}
+		else if(type == NUL){
+			pos += length;
+		}
+	}
+	virtual int getType() {return type;}
+	virtual void display() {
+		if(type == INTE){
+			printf("%d\n", value);
+		}
+		else if(type == STRING){
+			printf("%s\n", str.c_str());
+		}
+		else if(type == NUL){
+			printf("NULL\n");
+		}
+	}
 };
 
 class Null : public Type {
 public:
-	Null() : Type(0, 0) {
+	Null() : Type(0, 0, NUL) {
 	}
 	virtual void write (uint* b, int& pos) {
 		// pos - nth byte of page b
 	    pos += length;
 	}
 	virtual int getType(){
-		return NUL;
+		return type;
 	}
 	virtual void display(){
 		printf("NULL\n");
@@ -41,8 +77,7 @@ public:
 
 class Varchar : public Type {
 public:
-	string str;
-	Varchar(string value, int len, bool n) : Type(len, n) {
+	Varchar(string value, int len, bool n) : Type(len, n, STRING) {
 		str = value;
 	}
 	virtual void write (uint* b, int& pos) {
@@ -55,7 +90,7 @@ public:
 	    pos += length;
 	}
 	virtual int getType(){
-		return STRING;
+		return type;
 	}
 	virtual void display(){
 		printf("%s\n", str.c_str());
@@ -64,9 +99,8 @@ public:
 
 class Integer : public Type {
 public:
-	int value;
-	int number;
-	Integer (int value, bool n, string len) : Type(4, n) {
+	Integer (int value, bool n, string len) : Type(4, n, INTE) {
+		this->value = value;
 		number = atoi(len.c_str());
 	}
 	virtual void write(uint* b, int& pos) {
@@ -77,7 +111,7 @@ public:
 	    pos += length;
 	}
 	virtual int getType(){
-		return INTEGER;
+		return type;
 	}
 	virtual void display(){
 		printf("%d\n", value);
@@ -86,9 +120,9 @@ public:
 
 class Bool : public Type {
 public:
-	bool value;
-	Bool(bool val, bool n) : Type(1, n){
-		value = val;
+	bool value1;
+	Bool(bool val, bool n) : Type(1, n, BOOL){
+		value1 = val;
 	}
 	virtual void write(uint* b, int& pos) {}
 	virtual int getType(){

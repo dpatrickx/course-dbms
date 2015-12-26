@@ -41,7 +41,12 @@ public:
 		// display all the attributes
 		map<string, Type>::iterator s_it;
 		for(s_it = attributes.begin(); s_it != attributes.end(); s_it++){
-			s_it->second.display();
+			if(s_it->second.getType() == INTE){
+				((Integer*)(&s_it->second))->display();
+			}
+			else if(s_it->second.getType() == STRING){
+				((Varchar*)(&s_it->second))->display();
+			}
 		}
 	}
 
