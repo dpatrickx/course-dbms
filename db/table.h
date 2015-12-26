@@ -63,16 +63,16 @@ private:
         }
     }
 public:
-    string name;
+    string tbName;
     string path;    // path/name.txt
     Attr example;
 
-    Table(TableCon c, string n, string root) {
+    Table(const TableCon& c, string n, string root) {
         // set priKey
         priKey = c.priKey;
         // set name
         path = root;
-        name = n;
+        tbName = n;
         // set _fileid
         fm = new FileManager();
         fm->createFile((root+"/"+n+".txt").c_str());
@@ -150,7 +150,7 @@ public:
         cout<<"| Field       | Type        | Null | Key |\n";
         cout<<"+-------------+-------------+------+-----+\n";
         map<string, Type>::iterator it;
-        for (it = attr.attributes.begin(); it != attr.attributes.end(); it++) {
+        for (it = example.attributes.begin(); it != example.attributes.end(); it++) {
             cout<<"| "<<it->first<<" | ";
             switch((it->second).getType()) {
                 case INTE:
@@ -168,8 +168,9 @@ public:
             if (priKey == (it->first))
                 cout<<" PRI |\n";
             else
-                cout<<"     |\n"
+                cout<<"     |\n";
         }
+        cout<<"+-------------+-------------+------+-----+\n";
     }
 
     void showTB(int pageID){
@@ -277,7 +278,7 @@ public:
     }
 
     void display() {
-        cout<<name<<endl;
+        cout<<tbName<<endl;
     }
 
     void insert(vector<string> items, vector<vector<string> > value){

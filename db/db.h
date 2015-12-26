@@ -33,19 +33,20 @@ public:
         }
         Table* tb = getTable(name);
         // tb->drop();
+        delete tb;
         system(("rm "+dbName+"/"+name+".txt").c_str());
         tbName.remove(name);
         tbMap.erase(name);
     }
 
-    void createTB(TableCon c, string n, string path) {
+    void createTB(const TableCon& c, string n, string path) {
         if (tbMap.count(n)) {
             printf("ERROR 1050 (42S01): Table '%s' already exists\n", n.c_str());
             return;
         }
-        Table table(c, n, path);
+        Table* table = new Table(c, n, path);
         tbName.insert(n);
-        tbMap.insert(map<string, Table*>::value_type(n, &table));
+        tbMap.insert(map<string, Table*>::value_type(n, table));
     }
 
     void showTBs() {
@@ -58,21 +59,27 @@ public:
     }
 
     void insertTB(string name, vector<string> t, vector<vector<string> > v) {
+        cout<<"--"<<name<<"--\n";
         if (tbMap.count(name) == 0) {
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
             return;
         }
         Table* tb = getTable(name);
         cout<<"insertTB()\n";
-        // tb->insert(t, v);
+        tb->insert(t, v);
     }
 
     void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
         cout<<"selectTB()\n";
-        // tb->select(attrs, t, cond);
+        Table* tb = getTable(t[0]);
+        tb->select(attrs, cond);
     }
 
     void descTB(string name) {
+        if (tbMap.count(name) == 0) {
+            printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
+            return;
+        }
         Table* tb = getTable(name);
         tb->desc();
     }

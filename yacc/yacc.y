@@ -22,7 +22,7 @@
 %token<m_sId>  '%'  '='  '>'  '<'  '.' '+' '-' '*' '/'
 %token<m_sId>  ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}' '?'
 %token<m_cOp>  OPERATOR
-%type<m_sql>   sqllist
+%type<m_sId>   sqllist
 %type<m_usedb>   usedbsql
 %type<m_dropdb>  dropdbsql
 %type<m_credb>   createdbsql
@@ -126,7 +126,6 @@ showtbsql:
 createtbsql:
     CREATE TABLE IDENTIFIER '(' tablecon ';' {
         $$.init($3, $5);
-        $$.display();
         $$.work();
     };
 tablecon:
@@ -242,14 +241,14 @@ checkval:
 
 insertsql:
     INSERT INTO IDENTIFIER '(' tableitems ')' VALUES valuesql {
-        InsertSql ins($3, $5, $8);
-        ins.display();
+        $$.init($3, $5, $8);
+        $$.display();
         $$.work();
     }
     | INSERT INTO IDENTIFIER VALUES valuesql {
         vector<string> temp;
-        InsertSql ins($3, temp, $5);
-        ins.display();
+        $$.init($3, temp, $5);
+        $$.display();
         $$.work();
     };
 tableitems:

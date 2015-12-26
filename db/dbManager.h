@@ -18,7 +18,6 @@ private:
     DB* getDB(string name) {
         return dbMap[name];
     }
-public:
     DBManager(string r) {
         root = r;
         if (root[root.size()-1] != '/')
@@ -26,6 +25,14 @@ public:
         currDbName = "";
     }
 
+public:
+    static DBManager* _instance;
+    static DBManager* instance(string r) {
+        if (_instance == 0) {
+            _instance = new DBManager(r);
+        }
+        return _instance;
+    }
     PriQueue<string> dbName;
     map<string, DB*> dbMap;
     string currDbName;
@@ -114,7 +121,7 @@ public:
         }
     }
 
-    void tbWork(TableCon c, string n) {
+    void tbWork(const TableCon& c, string n) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;

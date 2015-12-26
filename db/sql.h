@@ -5,11 +5,16 @@
 #include "auxSql.h"
 #include "para.h"
 
-static DBManager* manager = new DBManager("./");
-
 class Sql{
 public:
     int sqlType;
+    Sql() {}
+    // Sql() : manager(DBManager::instance("./")) {}
+    // DBManager* const manager;
+    // Sql& operator = (const Sql& s) {
+    //     this->sqlType = s.sqlType;
+    //     return *this;
+    // }
     virtual void work() {}
 };
 
@@ -22,6 +27,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->dbWork(dbName, sqlType);
     }
 
@@ -45,6 +51,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->dbWork(dbName, sqlType);
     }
 
@@ -67,6 +74,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->dbWork(dbName, sqlType);
     }
 
@@ -91,6 +99,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->dbWork(dbName, sqlType);
     }
 
@@ -108,6 +117,7 @@ public:
     string name;
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(content, name);
     }
 
@@ -144,11 +154,12 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(tbName, sqlType);
     }
 
     void display() {
-        cout<<"desc table "<<tbName<<endl;
+        cout<<"SQL:  desc table "<<tbName<<endl;
     }
 };
 
@@ -160,6 +171,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork("", sqlType);
     }
 
@@ -179,6 +191,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(tbName, sqlType);
     }
 
@@ -207,6 +220,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(tableName, tableitems, valueSqls);
     }
 
@@ -217,7 +231,7 @@ public:
     }
     void display() {
         cout<<"-------------------\n";
-        cout<<"insert into table: "<<tableName<<endl;
+        cout<<"SQL:  insert into table: "<<tableName<<endl;
         cout<<"item size is "<<tableitems.size()<<endl;
         for (int i = 0;i < tableitems.size();i++) {
             cout<<tableitems[i]<<endl;
@@ -228,6 +242,7 @@ public:
                 cout<<valueSqls[i][j]<<' ';
             cout<<endl;
         }
+        cout<<"-------------------\n";
     }
 
 };
@@ -256,6 +271,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(attrs, tables, cond);
     }
 
@@ -294,6 +310,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(tableName, cond);
     }
 
@@ -320,6 +337,7 @@ public:
     }
 
     void work() {
+        DBManager* manager = DBManager::instance("./");
         manager->tbWork(tableName, set, cond);
     }
 

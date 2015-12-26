@@ -1,6 +1,7 @@
 #include "main.h"
 #include "yacc.tab.h"
 #include "../db/sql.h"
+#include "../db/dbManager.h"
 
 int main()
 {

@@ -1,4 +1,5 @@
 create database test;
+show databases;
 use test;
 
 CREATE TABLE book (
@@ -11,21 +12,14 @@ CREATE TABLE book (
   PRIMARY KEY  (id)
 );
 
-show tables;
-desc table book;
-
-INSERT INTO book(item1, item2) values     -- yes InsertSql
- (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
+INSERT INTO book(id, title, authors, pulisher_id, copies, pages) VALUES
+  (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
  (200002,'Standing in the Shadows','Richard Bruce Wright',101787,2900,1860),
  (200003,'Children of the Thunder','Carlo DEste',102928,3447,2154),
  (200004,'The Great Gilly Hopkins','Gina Bari Kolata',101339,39,2809),
  (200005,'Meine Juden--eure Juden','E. J. W. Barber',103089,206,2771),
  (200006,'You Can Draw a Kangaroo','Amy Tan',101850,5296,2092);
 
--- select sql, expression only support int, maybe worthy to try support string add
-select * from book;   -- yes SelectSql
-select * from book where id = 3 and class = 'hello' and id = 3+4*5;
-update book set id = 2 * 3 where id1 = 1;
-update book set id = 3+4*5 where id1 > 3;
-drop table book;
-drop database test;
+select id, title, authors, copies from book;
+
+desc table book;
