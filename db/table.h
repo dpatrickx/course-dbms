@@ -32,6 +32,7 @@ private:
     BufPageManager* bpm;
     FileManager* fm;
     map<string, int> offset;
+    string priKey;
 
     // 1. write every Type
     // 2. write NullBitMap
@@ -67,6 +68,8 @@ public:
     Attr example;
 
     Table(TableCon c, string n, string root) {
+        // set priKey
+        priKey = c.priKey;
         // set name
         path = root;
         name = n;
@@ -139,6 +142,34 @@ public:
         b[0] = 32;
         b[1] = 0;   // 32 pages
         bpm->markDirty(index);
+    }
+
+    // describe talbe
+    void desc() {
+        cout<<"+-------------+-------------+------+-----+\n";
+        cout<<"| Field       | Type        | Null | Key |\n";
+        cout<<"+-------------+-------------+------+-----+\n";
+        map<string, Type>::iterator it;
+        for (it = attr.attributes.begin(); it != attr.attributes.end(); it++) {
+            cout<<"| "<<it->first<<" | ";
+            switch((it->second).getType()) {
+                case INTE:
+                    cout<<"INT("<<(it->second).number<<") |";
+                    break;
+                case STRING:
+                    cout<<"VARCHAR("<<(it->second).length<<") |";
+                    break;
+                default: break;
+            }
+            if ((it->second).notNull)
+                cout<<" NO  |";
+            else
+                cout<<" YES |";
+            if (priKey == (it->first))
+                cout<<" PRI |\n";
+            else
+                cout<<"     |\n"
+        }
     }
 
     void showTB(int pageID){
@@ -230,88 +261,6 @@ public:
         pos %= 32;
         b[pos] &= (~(1<<(31-pos)));
     }
-
-    //search
-    //equal->condition, attribute->used for update
-    // int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
-    //     for(int i = 0; i < 32; i++){
-    //         int index;
-    //         BufType b = bpm->getPage(_fileID, i, index);
-    //         for(int j = 0; j < slotNum; j++){
-    //             char* bb = (char*)b + j*length;
-    //             bb += offset[name];
-    //             int len = example.getAttr(name)->length;
-    //             int type = example.getAttr(name)->getType();
-    //             if(type == INT){
-    //                 uint* bbb = (uint*)bb;
-    //                 if((*bbb) == (*(int*)equal)){
-    //                     if(sel == DELETE){
-    //                         removeItem(i, j);
-    //                     }
-    //                     else if(sel == UPDATE){
-    //                         updateItem(i, j, attribute);
-    //                     }
-    //                     else if(sel == SELECT){
-    //                         char* position = (char*)b + j*length;
-    //                         map<string, int>::iterator it;
-    //                         for(it = offset.begin(); it != offset.end(); it++){
-    //                             int t = example.getAttr(it->first)->getType();
-    //                             if(t == INTE){
-    //                                 cout << it->first << ": ";
-    //                                 cout << (*(uint*)(position + it->second)) << endl;
-    //                             }
-    //                             else if(t == STRING){
-    //                                 cout << it->first << ": ";
-    //                                 for(int k = 0; k < example.getAttr(it->first)->length; k++){
-    //                                     cout << (*(position + it->second + k));
-    //                                 }
-    //                                 cout << endl;
-    //                             }
-    //                             else if(t == BOOL){
-    //                                 cout << it->first << ": ";
-    //                                 cout << (*(bool*)(position + it->second)) << endl;
-    //                             }
-    //                         }
-    //                         cout << endl;
-    //                     }
-    //                 }
-    //             }
-    //             else if(type == CHAR){
-    //                 if(strncmp(bb, equal, len) == 0){
-    //                     if(sel == DELETE){
-    //                         removeItem(i, j);
-    //                     }
-    //                     else if(sel == UPDATE){
-    //                         updateItem(i, j, attribute);
-    //                     }
-    //                     else if(sel == SELECT){
-    //                         char* position = (char*)b + j*length;
-    //                         map<string, int>::iterator it;
-    //                         for(it = offset.begin(); it != offset.end(); it++){
-    //                             int t = example.getAttr(it->first)->getType();
-    //                             if(t == INTE){
-    //                                 cout << it->first << ": ";
-    //                                 cout << (*(uint*)(position + it->second)) << endl;
-    //                             }
-    //                             else if(t == STRING){
-    //                                 cout << it->first << ": ";
-    //                                 for(int k = 0; k < example.getAttr(it->first)->length; k++){
-    //                                     cout << (*(position + it->second + k));
-    //                                 }
-    //                                 cout << endl;
-    //                             }
-    //                             else if(t == BOOL){
-    //                                 cout << it->first << ": ";
-    //                                 cout << (*(bool*)(position + it->second)) << endl;
-    //                             }
-    //                         }
-    //                         cout << endl;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 
     // update Item:
     // 1. _writeItem

@@ -74,8 +74,7 @@ public:
 
     void descTB(string name) {
         Table* tb = getTable(name);
-        // tb->desc();
-        cout<<"descTB()\n";
+        tb->desc();
     }
 
     void deleteTB(string name, CondSql cond) {
