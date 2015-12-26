@@ -12,7 +12,7 @@
 %}
 
 %token<m_sId>  INTEGER
-%token<m_sId>  DATABASE SHOW DATABASES TABLES
+%token<m_sId>  DATABASE SHOW DATABASES TABLES CHECK IN
 %token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
 %token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NULLL IS
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
@@ -32,7 +32,7 @@
 %type<m_showtb>  showtbsql
 %type<m_con>   tablecon
 %type<m_ins>   insertsql
-%type<m_strv>  tableitems valueitems tables
+%type<m_strv>  tableitems valueitems tables checkval
 %type<m_vecv>  valuesql
 %type<m_sel>   selectsql
 %type<m_join>  joinsql
@@ -139,6 +139,9 @@ tablecon:
         $$.name.insert($$.name.end(), $9.name.begin(), $9.name.end());
         $$.type.insert($$.type.end(), $9.type.begin(), $9.type.end());
         $$.notNull.insert($$.notNull.end(), $9.notNull.begin(), $9.notNull.end());
+        $$.checkAttrs = $9.checkAttrs;
+        $$.checkVal = $9.checkVal;
+        $$.priKey = $9.priKey;
     }
     | IDENTIFIER TYPE '(' INTEGER ')' ',' tablecon {
         $$.length.push_back($4);
@@ -149,6 +152,9 @@ tablecon:
         $$.name.insert($$.name.end(), $7.name.begin(), $7.name.end());
         $$.type.insert($$.type.end(), $7.type.begin(), $7.type.end());
         $$.notNull.insert($$.notNull.end(), $7.notNull.begin(), $7.notNull.end());
+        $$.checkAttrs = $7.checkAttrs;
+        $$.checkVal = $7.checkVal;
+        $$.priKey = $7.priKey;
     }
     | IDENTIFIER TYPE CONNOP NULLL ',' tablecon {
         $$.length.push_back("0");
@@ -159,6 +165,9 @@ tablecon:
         $$.name.insert($$.name.end(), $6.name.begin(), $6.name.end());
         $$.type.insert($$.type.end(), $6.type.begin(), $6.type.end());
         $$.notNull.insert($$.notNull.end(), $6.notNull.begin(), $6.notNull.end());
+        $$.checkAttrs = $6.checkAttrs;
+        $$.checkVal = $6.checkVal;
+        $$.priKey = $6.priKey;
     }
     | IDENTIFIER TYPE ',' tablecon {
         $$.length.push_back("0");
@@ -169,6 +178,9 @@ tablecon:
         $$.name.insert($$.name.end(), $4.name.begin(), $4.name.end());
         $$.type.insert($$.type.end(), $4.type.begin(), $4.type.end());
         $$.notNull.insert($$.notNull.end(), $4.notNull.begin(), $4.notNull.end());
+        $$.checkAttrs = $4.checkAttrs;
+        $$.checkVal = $4.checkVal;
+        $$.priKey = $4.priKey;
     }
     | IDENTIFIER TYPE '(' INTEGER ')' CONNOP NULLL ')' {
         $$.name.push_back($1);
@@ -194,8 +206,38 @@ tablecon:
         $$.length.push_back("0");
         $$.notNull.push_back(false);
     }
+    | CHECK '(' IDENTIFIER IN '(' checkval ')' ')' ',' tablecon {
+        $$.checkAttrs.push_back($3);
+        $$.checkVal.push_back($6);
+        $$.checkAttrs.insert($$.checkAttrs.end(), $10.checkAttrs.begin(), $10.checkAttrs.end());
+        $$.checkVal.insert($$.checkVal.end(), $10.checkVal.begin(), $10.checkVal.end());
+        $$.name = $10.name;
+        $$.type = $10.type;
+        $$.length = $10.length;
+        $$.notNull = $10.notNull;
+        $$.priKey = $10.priKey;
+    }
+    | CHECK '(' IDENTIFIER IN '(' checkval ')' ')' {
+        $$.checkAttrs.push_back($3);
+        $$.checkVal.push_back($6);
+    }
     | PRIMARY KEY '(' IDENTIFIER ')' ')' {
         $$.priKey = $4;
+    };
+checkval:
+    VALUEIT ',' checkval {
+        $$.push_back($1);
+        $$.insert($$.end(), $3.begin(), $3.end());
+    }
+    | INTEGER ',' checkval {
+        $$.push_back($1);
+        $$.insert($$.end(), $3.begin(), $3.end());
+    }
+    | VALUEIT {
+        $$.push_back($1);
+    }
+    | INTEGER {
+        $$.push_back($1);
     };
 
 insertsql:

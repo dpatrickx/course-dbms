@@ -19,6 +19,8 @@ public:
     vector<string> length;
     vector<bool>   notNull;
     string priKey;
+    vector<string> checkAttrs;
+    vector<vector<string> > checkVal;
 
     TableCon() {}
 
