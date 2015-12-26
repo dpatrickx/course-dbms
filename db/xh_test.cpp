@@ -46,9 +46,28 @@ int main(){
 	tb->showTB(1);
 
 	//test update
-	CondItem* set = new CondItem();
-	AttrItem* item1 = new AttrItem();
-	item->init("test", "xuhan");
-	AttrItem* item2 = new AttrItem();
-	set.init("=", *item1, *item2, )
+	string tableName = "test";
+	CondSql cond;
+	vector<CondItem> set;
+
+	AttrItem item1("", "xuhan");
+	AttrItem item2("", "");
+	Expression expr;
+	expr.value = 9;
+	CondItem conditem("=", item1, item2, expr);
+
+	AttrItem item3("", "bjs");
+	Expression expr1;
+	expr1.str = "hhh";
+	CondItem condi("=", item3, item2, expr1);
+
+	cond.conditions.push_back(conditem);
+	set.push_back(condi);
+
+	// tb->update(set, cond);
+	// tb->showTB(1);
+	cout << endl;
+	cout << tb->conform(cond, 1, 0) << endl;
+	//cout << tb->conform(cond, 1, 1) << endl;
+	//cout << tb->conform(cond, 1, 2) << endl;
 }
