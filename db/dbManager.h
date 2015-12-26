@@ -97,10 +97,12 @@ public:
         }
         switch(type) {
             case SHOWTB:
-                currDb->showTBs();
+                // currDb->showTBs();
+                cout<<"showTBs()\n";
                 break;
             case DROPTB:
-                currDb->dropTb(string n);
+                // currDb->dropTb(string n);
+                cout<<"dropTB()\n";
                 break;
             default: break;
         }
@@ -111,7 +113,8 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->createTB(c, n);
+        // currDb->createTB(c, n);
+        cout<<"createTB()\n";
     }
 
     void tbWork(vector<string> t, vector<vector<string> > v) {
@@ -119,7 +122,8 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->insertTB(t, v);
+        // currDb->insertTB(t, v);
+        cout<<"insertTBs()\n";
     }
 
     void tbWork(vector<AttrItem> attrs, string t, JoinSql join, CondSql cond) {

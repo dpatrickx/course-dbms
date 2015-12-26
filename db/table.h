@@ -473,25 +473,25 @@ public:
         bool ret = 1;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
-            if(item.jugeOp == "="){
-                int type = test.getAttr(item.attr1.attrName).getType();
+            if(item.judgeOp == "="){
+                int type = test->getAttr(item.attr1.attrName).getType();
                 if(type == INTEGER){
                     if(item.expression == NULL){
-                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
-                            ((Integer)test.getAttr(item.attr2.attrName)).value){
+                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
+                            ((Integer)test->getAttr(item.attr2.attrName)).value){
                             ret = 0;
                             break;
                         }
                     }
                     else if(attr2 == NULL){
-                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
+                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
                             item.expression.value){
                             ret = 0;
                             break;
                         } 
                     }
                     else{
-                        int a2 = ((Integer)test.getAttr(item.attr2.attrName)).value;
+                        int a2 = ((Integer)test->getAttr(item.attr2.attrName)).value;
                         if(item.expression.ops[0] == "+"){
                             a2 += atoi(item.expression.numbers[0].c_str());
                         }
@@ -504,7 +504,7 @@ public:
                         else if(item.expression.ops[0] == "/"){
                             a2 /= atoi(item.expression.numbers[0].c_str());
                         }
-                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
+                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
                             a2){
                             ret = 0;
                             break;
@@ -513,14 +513,14 @@ public:
                 }
                 else if(type == STRING){
                     if(item.expression == NULL){
-                        if(((Char)test.getAttr(item.attr1.attrName)).str != 
-                            ((Char)test.getAttr(item.attr2.attrName)).str){
+                        if(((Char)test->getAttr(item.attr1.attrName)).str != 
+                            ((Char)test->getAttr(item.attr2.attrName)).str){
                             ret = 0;
                             break;
                         }
                     }
                     else{
-                        string compare = "\'" + ((Char)test.getAttr(item.attr1.attrName)).str + "\'";
+                        string compare = "\'" + ((Char)test->getAttr(item.attr1.attrName)).str + "\'";
                         if(compare != item.expression.str){
                             ret = 0;
                             break;
@@ -529,62 +529,62 @@ public:
                 }
             }
             else{
-                int type = test.getAttr(item.attr1.attrName).getType();
+                int type = test->getAttr(item.attr1.attrName).getType();
                 if(type == INTEGER){
                     if(item.expression == NULL){ // attr1 </<=/>/>=attr2
-                        if(item.jugeOp == "<"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
-                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                        if(item.judgeOp == "<"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value >= 
+                                ((Integer)test->getAttr(item.attr2.attrName)).value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == "<="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
-                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                        else if(item.judgeOp == "<="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value > 
+                                ((Integer)test->getAttr(item.attr2.attrName)).value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
-                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                        else if(item.judgeOp == ">="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value < 
+                                ((Integer)test->getAttr(item.attr2.attrName)).value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
-                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                        else if(item.judgeOp == ">"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value <= 
+                                ((Integer)test->getAttr(item.attr2.attrName)).value){
                                 ret = 0;
                                 break;
                             }
                         }
                     }
                     else if(attr2 == NULL){ //attr1 </>/<=/>= expression
-                        if(item.jugeOp == "<"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
+                        if(item.judgeOp == "<"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value >= 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == "<="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
+                        else if(item.judgeOp == "<="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value > 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
+                        else if(item.judgeOp == ">="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value < 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
+                        else if(item.judgeOp == ">"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value <= 
                                 item.expression.value){
                                 ret = 0;
                                 break;
@@ -592,7 +592,7 @@ public:
                         }
                     }
                     else{ // attr1 </<=/>/>= attr2 +/-/*// number
-                        int a2 = ((Integer)test.getAttr(item.attr2.attrName)).value;
+                        int a2 = ((Integer)test->getAttr(item.attr2.attrName)).value;
                         if(item.expression.ops[0] == "+"){
                             a2 += atoi(item.expression.numbers[0].c_str());
                         }
@@ -605,29 +605,29 @@ public:
                         else if(item.expression.ops[0] == "/"){
                             a2 /= atoi(item.expression.numbers[0].c_str());
                         }
-                        if(item.jugeOp == "<"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
+                        if(item.judgeOp == "<"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value >=
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == "<="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
+                        else if(item.judgeOp == "<="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value >
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">="){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
+                        else if(item.judgeOp == ">="){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value <
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
-                        else if(item.jugeOp == ">"){
-                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
+                        else if(item.judgeOp == ">"){
+                            if(((Integer)test->getAttr(item.attr1.attrName)).value <=
                                 a2){
                                 ret = 0;
                                 break;

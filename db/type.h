@@ -1,8 +1,8 @@
 #ifndef TYPE_H
 #define TYPE_H
 
+#include "para.h"
 #include <cstring>
-#include <para.h>
 #include <stdio.h>
 #include <stdlib.h>
 using namespace std;
@@ -16,9 +16,9 @@ public:
 		length = l;
 		notNull = n;
 	}
-	virtual int write(uint*, int&) = 0;
-	virtual int getType() = 0;
-	virtual void display() = 0;
+	virtual int write(uint*, int&) {}
+	virtual int getType() {}
+	virtual void display() {}
 };
 
 class Null : public Type {
