@@ -85,7 +85,7 @@ public:
             } else if (tempType == "varchar") {
                 int tempLen = atoi(c.length[i].c_str());
                 len += tempLen;
-                Varchar type(tempLen, c.notNull[i]);
+                Varchar type("", tempLen, c.notNull[i]);
                 ex.attributes.insert(pair<string, Type>(c.name[i], type));
             } else if (tempType == "bool") {
                 len += 1;
@@ -113,12 +113,13 @@ public:
         // init first page
         int index;
         pageNum = 32;
-        for (int i = 31;i >= 0;i--) {
-            BufType b = bpm->allocPage(_fileID, i, index, false);
+        BufType b;
+        for (int i = 32;i >= 0;i--) {
+            b = bpm->allocPage(_fileID, i, index, false);
             // set array b to 0, b[2048]
-            memest(b, 0, 2048*sizeof(uint));
+            memset(b, 0, 2048*sizeof(uint));
         }
-        b[0] = 31;
+        b[0] = 32;
         b[1] = 0;   // 32 pages
         bpm->markDirty(index);
     }
@@ -152,19 +153,19 @@ public:
         }
     writeFlag1:
         // find a available slot on the page's bitmap
-        BufType b = bpm->getPage(_fileID, emptyPage, index);
+        b = bpm->getPage(_fileID, emptyPage, index);
         bpm->markDirty(index);
         int emptyRid = 0;
         int add = length*slotNum;
         for (int i = 0; i < bitSize; i++) {
             int temp = b[i+add];
-            if (b == -1) {
-                empthRid += 32;
+            if (b[i] == -1) {
+                emptyRid += 32;
                 continue;
             }
             for (int j = 31; j >= 0; j--) {
                 if (!(temp>>j & 1)) {
-                    empthRid += (31-j);
+                    emptyRid += (31-j);
                     // put the empty slot bit to be 1
                     b[i+add] |= (1<<j);
                     // check if the page is full
@@ -203,85 +204,85 @@ public:
 
     //search
     //equal->condition, attribute->used for update
-    int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
-        for(int i = 0; i < 32; i++){
-            int index;
-            BufType b = bpm->getPage(_fileID, i, index);
-            for(int j = 0; j < slotNum; j++){
-                char* bb = (char*)b + j*length;
-                bb += offset[name];
-                int len = example.getAttr(name)->length;
-                int type = example.getAttr(name)->getType();
-                if(type == INT){
-                    uint* bbb = (uint*)bb;
-                    if((*bbb) == (*(int*)equal)){
-                        if(sel == DELETE){
-                            removeItem(i, j);
-                        }
-                        else if(sel == UPDATE){
-                            updateItem(i, j, attribute);
-                        }
-                        else if(sel == SELECT){
-                            char* position = (char*)b + j*length;
-                            map<string, int>::iterator it;
-                            for(it = offset.begin(); it != offset.end(); it++){
-                                int t = example.getAttr(it->first)->getType();
-                                if(t == INTEGER){
-                                    cout << it->first << ": ";
-                                    cout << (*(uint*)(position + it->second)) << endl;
-                                }
-                                else if(t == STRING){
-                                    cout << it->first << ": ";
-                                    for(int k = 0; k < example.getAttr(it->first)->length; k++){
-                                        cout << (*(position + it->second + k));
-                                    }
-                                    cout << endl;
-                                }
-                                else if(t == BOOL){
-                                    cout << it->first << ": ";
-                                    cout << (*(bool*)(position + it->second)) << endl;
-                                }
-                            }
-                            cout << endl;
-                        }
-                    }
-                }
-                else if(type == CHAR){
-                    if(strncmp(bb, equal, len) == 0){
-                        if(sel == DELETE){
-                            removeItem(i, j);
-                        }
-                        else if(sel == UPDATE){
-                            updateItem(i, j, attribute);
-                        }
-                        else if(sel == SELECT){
-                            char* position = (char*)b + j*length;
-                            map<string, int>::iterator it;
-                            for(it = offset.begin(); it != offset.end(); it++){
-                                int t = example.getAttr(it->first)->getType();
-                                if(t == INTEGER){
-                                    cout << it->first << ": ";
-                                    cout << (*(uint*)(position + it->second)) << endl;
-                                }
-                                else if(t == STRING){
-                                    cout << it->first << ": ";
-                                    for(int k = 0; k < example.getAttr(it->first)->length; k++){
-                                        cout << (*(position + it->second + k));
-                                    }
-                                    cout << endl;
-                                }
-                                else if(t == BOOL){
-                                    cout << it->first << ": ";
-                                    cout << (*(bool*)(position + it->second)) << endl;
-                                }
-                            }
-                            cout << endl;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // int searchItem(string name, char* equal, int sel, Attr attribute = NULL) {
+    //     for(int i = 0; i < 32; i++){
+    //         int index;
+    //         BufType b = bpm->getPage(_fileID, i, index);
+    //         for(int j = 0; j < slotNum; j++){
+    //             char* bb = (char*)b + j*length;
+    //             bb += offset[name];
+    //             int len = example.getAttr(name)->length;
+    //             int type = example.getAttr(name)->getType();
+    //             if(type == INT){
+    //                 uint* bbb = (uint*)bb;
+    //                 if((*bbb) == (*(int*)equal)){
+    //                     if(sel == DELETE){
+    //                         removeItem(i, j);
+    //                     }
+    //                     else if(sel == UPDATE){
+    //                         updateItem(i, j, attribute);
+    //                     }
+    //                     else if(sel == SELECT){
+    //                         char* position = (char*)b + j*length;
+    //                         map<string, int>::iterator it;
+    //                         for(it = offset.begin(); it != offset.end(); it++){
+    //                             int t = example.getAttr(it->first)->getType();
+    //                             if(t == INTEGER){
+    //                                 cout << it->first << ": ";
+    //                                 cout << (*(uint*)(position + it->second)) << endl;
+    //                             }
+    //                             else if(t == STRING){
+    //                                 cout << it->first << ": ";
+    //                                 for(int k = 0; k < example.getAttr(it->first)->length; k++){
+    //                                     cout << (*(position + it->second + k));
+    //                                 }
+    //                                 cout << endl;
+    //                             }
+    //                             else if(t == BOOL){
+    //                                 cout << it->first << ": ";
+    //                                 cout << (*(bool*)(position + it->second)) << endl;
+    //                             }
+    //                         }
+    //                         cout << endl;
+    //                     }
+    //                 }
+    //             }
+    //             else if(type == CHAR){
+    //                 if(strncmp(bb, equal, len) == 0){
+    //                     if(sel == DELETE){
+    //                         removeItem(i, j);
+    //                     }
+    //                     else if(sel == UPDATE){
+    //                         updateItem(i, j, attribute);
+    //                     }
+    //                     else if(sel == SELECT){
+    //                         char* position = (char*)b + j*length;
+    //                         map<string, int>::iterator it;
+    //                         for(it = offset.begin(); it != offset.end(); it++){
+    //                             int t = example.getAttr(it->first)->getType();
+    //                             if(t == INTEGER){
+    //                                 cout << it->first << ": ";
+    //                                 cout << (*(uint*)(position + it->second)) << endl;
+    //                             }
+    //                             else if(t == STRING){
+    //                                 cout << it->first << ": ";
+    //                                 for(int k = 0; k < example.getAttr(it->first)->length; k++){
+    //                                     cout << (*(position + it->second + k));
+    //                                 }
+    //                                 cout << endl;
+    //                             }
+    //                             else if(t == BOOL){
+    //                                 cout << it->first << ": ";
+    //                                 cout << (*(bool*)(position + it->second)) << endl;
+    //                             }
+    //                         }
+    //                         cout << endl;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     // update Item:
     // 1. _writeItem
@@ -301,10 +302,10 @@ public:
         cout<<name<<endl;
     }
 
-    void insert(vector<string> items, vector<vector<string>> value){
+    void insert(vector<string> items, vector<vector<string> > value){
         if(items.size() == 0){
             for(int i = 0; i < value.size(); i++){
-                Attr* writeItem = new Attr();
+                Attr* writeItems = new Attr();
                 map<string, int>::iterator it = offset.begin();
                 for(int j = 0; j < value[i].size(); j++){
                     string itemName = it->first;
@@ -313,39 +314,39 @@ public:
                     int type = exam->getType();
                     if(type == INTEGER){
                         int val = atoi(value[i][j].c_str());
-                        (Integer*)exam->value = val;
-                        writeItem->addAttr(*exam, itemName);
+                        ((Integer*)exam)->value = val;
+                        writeItems->addAttr(*exam, itemName);
                     }
                     else if(type == STRING){
                         string val = value[i][j];
-                        (Varchar)exam->str = val;
-                        writeItem->addAttr(*exam, itemName);
+                        ((Varchar*)exam)->str = val;
+                        writeItems->addAttr(*exam, itemName);
                     }
                     it++;
                 }
-                writeItem(*writeItem);
+                writeItem(*writeItems);
             }
         }
         else{
             for(int i = 0; i < value.size(); i++){
-                Attr* writeItem = new Attr();
-                for(map<string, int>::iterator it = offset.begin(); it != end; it++){
+                Attr* writeItems = new Attr();
+                for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
                     string itemName = it->first;
                     bool exist = 0;
                     for(int j = 0; j < items.size(); j++){
                         if(items[j] == itemName){
                             Type* exam = new Type();
                             exam = example.getAttr(itemName);
-                            int type = exam.getType();
+                            int type = exam->getType();
                             if(type == INTEGER){
                                 int val = atoi(value[i][j].c_str());
-                                (Integer*)exam->value = val;
-                                writeItem->addAttr(*exam, itemName);
+                                ((Integer*)exam)->value = val;
+                                writeItems->addAttr(*exam, itemName);
                             }
                             else if(type == STRING){
                                 string val = value[i][j];
-                                (Varchar*)exam->str = val;
-                                writeItem->addAttr(*exam, itemName);
+                                ((Varchar*)exam)->str = val;
+                                writeItems->addAttr(*exam, itemName);
                             }
                             exist = 1;
                             break;
@@ -353,10 +354,10 @@ public:
                     }
                     if(!exist){
                         Type* null = new Null();
-                        writeItem.addAttr(*null, itemName);
+                        writeItems->addAttr(*null, itemName);
                     }
                 }
-                writeItem(*writeItem);
+                writeItem(*writeItems);
             }
         }
     }
@@ -394,14 +395,14 @@ public:
                         int type = temp->getType();
                         if(type == INTEGER){
                             int val = *((uint*)(bb + offset[itemName]));
-                            (Integer*)temp->value = val;
+                            ((Integer*)temp)->value = val;
                             waitUpdate->addAttr(*temp, itemName);
                         }
                         else if(type == STRING){
                             char v[100];
                             strncpy(v, bb + offset[itemName], temp->length);
                             string val(v);
-                            (Varchar*)temp->str = val;
+                            ((Varchar*)temp)->str = val;
                             waitUpdate->addAttr(*temp, itemName);
                         }
                     }
@@ -409,24 +410,24 @@ public:
                         Type* temp = new Type();
                         temp = example.getAttr(set[k].attr1.attrName);
                         int type = temp->getType();
-                        if(set[k].attr2 == NULL){
+                        if(set[k].attr2.isNull()){
                             if(type == INTEGER){
-                                (Integer*)temp->value = set[k].expression.value;
+                                ((Integer*)temp)->value = set[k].expression.value;
                             }
                             else if(type == STRING){
-                                (Varchar*)temp->str = set[k].expression.str;
+                                ((Varchar*)temp)->str = set[k].expression.str;
                             }
                         }
-                        else if(set[k].expression == NULL){
+                        else if(set[k].expression.isNull()){
                             if(type == INTEGER){
-                                (Integer*)temp->value = ((Integer*)(waitUpdate.getAttr(set[k].attr2.attrName)))->value;
+                                ((Integer*)temp)->value = ((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
                             }
                             else if(type == STRING){
-                                (Varchar*)temp->str = ((Varchar*)(waitUpdate.getAttr(set[k].attr2.attrName)))->str;
+                                ((Varchar*)temp)->str = ((Varchar*)(waitUpdate->getAttr(set[k].attr2.attrName)))->str;
                             }
                         }
                         else{
-                            int a2 = ((Integer*)test.getAttr(set[k].attr2.attrName))->value;
+                            int a2 = ((Integer*)waitUpdate->getAttr(set[k].attr2.attrName))->value;
                             if(set[k].expression.ops[0] == "+"){
                                 a2 += atoi(set[k].expression.numbers[0].c_str());
                             }
@@ -439,11 +440,11 @@ public:
                             else if(set[k].expression.ops[0] == "/"){
                                 a2 /= atoi(set[k].expression.numbers[0].c_str());
                             }
-                            (Integer*)temp->value = a2;
+                            ((Integer*)temp)->value = a2;
                         }
                         waitUpdate->attributes[set[k].attr1.attrName] = *temp;
                     }
-                    updateItem(i, j, waitUpdate);
+                    updateItem(i, j, *waitUpdate);
                 }
             }
         }
@@ -464,14 +465,14 @@ public:
             int type = temp->getType();
             if(type == INTEGER){
                 int val = *((uint*)(bb + offset[itemName]));
-                (Integer*)temp->value = val;
+                ((Integer*)temp)->value = val;
                 test->addAttr(*temp, itemName);
             }
             else if(type == STRING){
                 char v[100];
                 strncpy(v, bb + offset[itemName], temp->length);
                 string val(v);
-                (Varchar*)temp->str = val;
+                ((Varchar*)temp)->str = val;
                 test->addAttr(*temp, itemName);
             }
         }
@@ -481,15 +482,15 @@ public:
             if(item.judgeOp == "="){
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTEGER){
-                    if(item.expression == NULL){
+                    if(item.expression.isNull()){
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             ((Integer*)test->getAttr(item.attr2.attrName))->value){
                             ret = 0;
                             break;
                         }
                     }
-                    else if(attr2 == NULL){
-                        if(((Integer)test->getAttr(item.attr1.attrName))->value != 
+                    else if(item.attr2.isNull()){
+                        if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
                             break;
@@ -517,7 +518,7 @@ public:
                     }
                 }
                 else if(type == STRING){
-                    if(item.expression == NULL){
+                    if(item.expression.isNull()){
                         if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
                             ((Varchar*)test->getAttr(item.attr2.attrName))->str){
                             ret = 0;
@@ -536,10 +537,10 @@ public:
             else{
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTEGER){
-                    if(item.expression == NULL){ // attr1 </<=/>/>=attr2
+                    if(item.expression.isNull()){ // attr1 </<=/>/>=attr2
                         if(item.judgeOp == "<"){
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
-                                ((Integer)test->getAttr(item.attr2.attrName))->value){
+                                ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
                                 break;
                             }
@@ -566,7 +567,7 @@ public:
                             }
                         }
                     }
-                    else if(attr2 == NULL){ //attr1 </>/<=/>= expression
+                    else if(item.attr2.isNull()){ //attr1 </>/<=/>= expression
                         if(item.judgeOp == "<"){
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 item.expression.value){

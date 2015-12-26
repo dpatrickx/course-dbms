@@ -40,8 +40,8 @@ public:
 	void display() {
 		// display all the attributes
 		map<string, Type>::iterator s_it;
-		for(s_it = attributes.begin(); s_it != attributes.end(); i++){
-			s_it->second.display(b, pos);
+		for(s_it = attributes.begin(); s_it != attributes.end(); s_it++){
+			s_it->second.display();
 		}
 	}
 

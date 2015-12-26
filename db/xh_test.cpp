@@ -1,4 +1,5 @@
 #include "type.h"
+#include "table.h"
 #include <iostream>
 
 int main(){
