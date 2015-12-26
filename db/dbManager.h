@@ -107,6 +107,9 @@ public:
             case DROPTBSQL:
                 currDb->dropTB(n);
                 break;
+            case DESCTBSQL:
+                currDb->descTB(n);
+                break;
             default: break;
         }
     }

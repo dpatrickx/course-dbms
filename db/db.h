@@ -72,6 +72,12 @@ public:
         // tb->select(attrs, t, cond);
     }
 
+    void descTB(string name) {
+        Table* tb = getTable(name);
+        // tb->desc();
+        cout<<"descTB()\n";
+    }
+
     void deleteTB(string name, CondSql cond) {
         if (tbMap.count(name) == 0) {
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());

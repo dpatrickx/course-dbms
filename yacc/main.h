@@ -36,6 +36,8 @@ struct YaccType
     AttrItem m_sitem;
     CondItem m_citem;
 
+    DescTbSql m_desc;
+
     DeteleSql m_dele;
 
     UpdateSql m_upda;

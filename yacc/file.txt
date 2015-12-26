@@ -12,6 +12,7 @@ CREATE TABLE book (
 );
 
 show tables;
+desc table book;
 
 INSERT INTO book(item1, item2) values     -- yes InsertSql
  (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),

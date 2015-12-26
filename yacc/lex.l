@@ -63,6 +63,7 @@ yin         ("\'"|"\"")
 "INT"|"int"                         {   yylval.m_sId = "int";       return TYPE;        }
 "VARCHAR"|"varchar"                 {   yylval.m_sId = "varchar";   return TYPE;        }
 "BOOL"|"bool"                       {   yylval.m_sId = "bool";      return TYPE;        }
+"DESC"|"desc"                       {   yylval.m_sId = "desc";      return DESC;        }
 {yin}           {
             yylval.m_sId = yytext;
             return YIN;

@@ -17,7 +17,7 @@
 %token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NULLL IS
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
 %token<m_sId>  JOIN ON USE IF EXISTS DROP
-%token<m_sId>  JUDGEOP CONNOP UPDATE SET
+%token<m_sId>  JUDGEOP CONNOP UPDATE SET DESC
 %token<m_sId>  DELETE
 %token<m_sId>  '%'  '='  '>'  '<'  '.' '+' '-' '*' '/'
 %token<m_sId>  ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}' '?'
@@ -44,6 +44,7 @@
 %type<m_dele>  deletesql
 %type<m_upda>  updatesql
 %type<m_set>   setsql
+%type<m_desc>  descsql
 %type<m_sId>   valueitem exprop
 
 %start sqllist
@@ -61,7 +62,8 @@ sqllist:
     | insertsql sqllist
     | selectsql sqllist
     | deletesql sqllist
-    | updatesql sqllist;
+    | updatesql sqllist
+    | descsql   sqllist;
 
 usedbsql:
     USE DATABASE IDENTIFIER ';' {
@@ -100,6 +102,12 @@ createdbsql:
 
 droptbsql:
     DROP TABLE IDENTIFIER ';' {
+        $$.init($3);
+        $$.display();
+        $$.work();
+    };
+descsql:
+    DESC TABLE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
         $$.work();

@@ -131,6 +131,27 @@ public:
         content.display();
     }
 };
+
+class DescTbSql : public Sql {
+public:
+    string tbName;
+    DescTbSql() {
+        sqlType = DESCTBSQL;
+    }
+
+    void init(string n) {
+        tbName = n;
+    }
+
+    void work() {
+        manager->tbWork(tbName, sqlType);
+    }
+
+    void display() {
+        cout<<"desc table "<<tbName<<endl;
+    }
+};
+
 class ShowTbSql : public Sql {
 public:
     string tbName;

@@ -16,5 +16,6 @@
 #define SELECTSQL 8
 #define DELETESQL 9
 #define UPDATESQL 10
+#define DESCTBSQL 11
 
 #endif
