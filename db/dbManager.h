@@ -5,10 +5,12 @@
 #define DBMANAGER_H
 
 #include "../utils/PriQueue.h"
+#include "../db/para.h"
 #include "db.h"
 #include <map>
 #include <string>
 #include <stdio.h>
+#include <sys/stat.h>
 
 class DBManager {
 private:
@@ -26,7 +28,7 @@ public:
         root = r;
         if (root[root.size()-1] != '/')
             root += "/";
-        currDb = "";
+        currDbName = "";
     }
 
     void showDBs() {
@@ -44,12 +46,12 @@ public:
             currDb = getDB(n);
         }
         else
-            printf("ERROR 1049 (42000): Unknown database%s\n", n);
+            printf("ERROR 1049 (42000): Unknown database%s\n", n.c_str());
     }
 
     void createDB(DB* d, string n) {
         if (dbMap.count(n)) {
-            printf("ERROR 1007 (HY000): Can't create database '%s'; database exists\n", n);
+            printf("ERROR 1007 (HY000): Can't create database '%s'; database exists\n", n.c_str());
             return;
         }
         mkdir(("./"+n+"/").c_str(), S_IRWXU);
@@ -57,36 +59,38 @@ public:
         dbName.insert(n);
     }
 
-    DB* dropDB(string name) {
-        if (dbMap.count(n) == 0) {
-            printf("ERROR 1008 (HY000): Can't drop database '%s'; database doesn't exist\n", name);
+    void dropDB(string name) {
+        if (dbMap.count(name) == 0) {
+            printf("ERROR 1008 (HY000): Can't drop database '%s'; database doesn't exist\n", name.c_str());
             return;
         }
         dbName.remove(name);
-        dbMap.remove(name);
+        dbMap.erase(name);
     }
 
     void dbWork(string n, int type) {
+        DB* db;
         switch(type) {
-            case CREATEDB:
-                DB* db = new DB(n)
+            case CREATEDBSQL:
+                db = new DB(n);
                 createDB(db, n);
                 break;
-            case SHOWDB:
+            case SHOWDBSQL:
                 if (n == "")
                     showDBs();
-                else
-                    DB* db = getDB(n);
-                    db->showTBs();
+                else {
+                    db = getDB(n);
+                    // db->showTBs();
+                    cout<<"dropTB()\n";
+                }
                 break;
-            case DROPDB:
+            case DROPDBSQL:
                 dropDB(n);
                 break;
-            case USEDB:
+            case USEDBSQL:
                 useDB(n);
                 break;
             default: break;
-
         }
     }
 
@@ -96,11 +100,11 @@ public:
             return;
         }
         switch(type) {
-            case SHOWTB:
+            case SHOWTBSQL:
                 // currDb->showTBs();
                 cout<<"showTBs()\n";
                 break;
-            case DROPTB:
+            case DROPTBSQL:
                 // currDb->dropTb(string n);
                 cout<<"dropTB()\n";
                 break;
@@ -117,7 +121,7 @@ public:
         cout<<"createTB()\n";
     }
 
-    void tbWork(vector<string> t, vector<vector<string> > v) {
+    void tbWork(string name, vector<string> t, vector<vector<string> > v) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
@@ -126,12 +130,13 @@ public:
         cout<<"insertTBs()\n";
     }
 
-    void tbWork(vector<AttrItem> attrs, string t, JoinSql join, CondSql cond) {
+    void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->selectDB(attrs, t, join, cond);
+        // currDb->selectDB(attrs, t, join, cond);
+        cout<<"selectTB()\n";
     }
 
     void tbWork(string name, CondSql cond) {
@@ -139,7 +144,8 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->deleteTB(name, cond);
+        // currDb->deleteTB(name, cond);
+        cout<<"deleteTB()\n";
     }
 
     void tbWork(string name, vector<CondItem> set, CondSql cond) {
@@ -147,13 +153,13 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->update(name, set, cond);
+        // currDb->update(name, set, cond);
+        cout<<"update()\n";
     }
 
     void display() {
-        map<string, Table*> iter;
-        for (iter = tables.begin();iter != tables.end();iter++)
-            cout<<iter->first<<endl;
+        for (int i = 0; i < dbName.size(); i++)
+            cout<<dbName[i]<<endl;
     }
 };
 

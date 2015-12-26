@@ -14,7 +14,7 @@
 %token<m_sId>  INTEGER
 %token<m_sId>  DATABASE SHOW DATABASES TABLES
 %token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
-%token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NUL IS
+%token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NULLL IS
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
 %token<m_sId>  JOIN ON USE IF EXISTS DROP
 %token<m_sId>  JUDGEOP CONNOP UPDATE SET
@@ -116,7 +116,7 @@ createtbsql:
         $$.display();
     };
 tablecon:
-    IDENTIFIER TYPE '(' INTEGER ')' CONNOP NUL ',' tablecon {
+    IDENTIFIER TYPE '(' INTEGER ')' CONNOP NULLL ',' tablecon {
         $$.length.push_back($4);
         $$.name.push_back($1);
         $$.type.push_back($2);
@@ -136,7 +136,7 @@ tablecon:
         $$.type.insert($$.type.end(), $7.type.begin(), $7.type.end());
         $$.notNull.insert($$.notNull.end(), $7.notNull.begin(), $7.notNull.end());
     }
-    | IDENTIFIER TYPE CONNOP NUL ',' tablecon {
+    | IDENTIFIER TYPE CONNOP NULLL ',' tablecon {
         $$.length.push_back("0");
         $$.name.push_back($1);
         $$.type.push_back($2);
@@ -156,7 +156,7 @@ tablecon:
         $$.type.insert($$.type.end(), $4.type.begin(), $4.type.end());
         $$.notNull.insert($$.notNull.end(), $4.notNull.begin(), $4.notNull.end());
     }
-    | IDENTIFIER TYPE '(' INTEGER ')' CONNOP NUL ')' {
+    | IDENTIFIER TYPE '(' INTEGER ')' CONNOP NULLL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back($4);
@@ -168,7 +168,7 @@ tablecon:
         $$.length.push_back($4);
         $$.notNull.push_back(false);
     }
-    | IDENTIFIER TYPE CONNOP NUL ')' {
+    | IDENTIFIER TYPE CONNOP NULLL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back("0");
@@ -292,16 +292,16 @@ condsql:
         $$.conditions.push_back($1);
     };
 conditem:
-    attritem IS NUL {
+    attritem IS NULLL {
         AttrItem attr2;
         Expression expre;
-        expre.str = "NULL";
+        expre.str = "NULLLL";
         $$.init("=", $1, attr2, expre);
     }
-    | attritem IS CONNOP NUL {
+    | attritem IS CONNOP NULLL {
         AttrItem attr2;
         Expression expre;
-        expre.str = "NULL";
+        expre.str = "NULLLL";
         $$.init(">", $1, attr2, expre);
     }
     | attritem JUDGEOP expression {

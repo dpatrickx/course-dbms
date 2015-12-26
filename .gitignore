@@ -5,3 +5,7 @@ yacc/test.sql
 .tags_sorted_by_file
 main
 *.exe
+*.o
+yacc/*.tab.h
+yacc/*.tab.c
+yacc/*.yy.c

@@ -5,10 +5,10 @@
 #define AUXSQL_H
 
 #include "para.h"
-#include "table.h"
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdlib.h>
 using namespace std;
 
 
