@@ -24,13 +24,12 @@ public:
 		type = t;
 	}
 	Type(){}
-	virtual void write(uint* b, int& pos) {
+	virtual void write(uint* b, int pos) {
 		if(type == INTE){
 			char* bb = (char*) b;
 		    bb += pos;
 		    uint* bbb = (uint*) bb;
 		    *(bbb) = value;
-		    pos += length;
 		}
 		else if(type == STRING){
 			cout << str << endl << endl;
@@ -63,9 +62,8 @@ class Null : public Type {
 public:
 	Null() : Type(0, 0, NUL) {
 	}
-	virtual void write (uint* b, int& pos) {
+	virtual void write (uint* b, int pos) {
 		// pos - nth byte of page b
-	    pos += length;
 	}
 	virtual int getType(){
 		return type;
@@ -80,14 +78,13 @@ public:
 	Varchar(string value, int len, bool n) : Type(len, n, STRING) {
 		str = value;
 	}
-	virtual void write (uint* b, int& pos) {
+	virtual void write (uint* b, int pos) {
 		// pos - nth byte of page b
 	    char* bb = (char*) b;
 	    bb += pos;
 	    for (int i = 0;i < length;i++) {
 	        *(bb+i) = str[i];
 	    }
-	    pos += length;
 	}
 	virtual int getType(){
 		return type;
@@ -103,12 +100,11 @@ public:
 		this->value = value;
 		number = atoi(len.c_str());
 	}
-	virtual void write(uint* b, int& pos) {
+	virtual void write(uint* b, int pos) {
 		char* bb = (char*) b;
 	    bb += pos;
 	    uint* bbb = (uint*) bb;
 	    *(bbb) = value;
-	    pos += length;
 	}
 	virtual int getType(){
 		return type;
@@ -124,7 +120,7 @@ public:
 	Bool(bool val, bool n) : Type(1, n, BOOL){
 		value1 = val;
 	}
-	virtual void write(uint* b, int& pos) {}
+	virtual void write(uint* b, int pos) {}
 	virtual int getType(){
 		return BOOL;
 	}

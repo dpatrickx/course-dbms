@@ -40,10 +40,13 @@ private:
         BufType b = bpm->getPage(_fileID, pageID, index);
         bpm->markDirty(index);
         int pos = rID*length; // posth byte of the page
-        attr.writeAttr(b, pos);
+        // attr.writeAttr(b, pos);
+
+        map<string, Type>::iterator s_it;
+        for(s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++)
+            s_it->second.write(b, pos+offset[s_it->first]);
         // after write, pos is at the end of all values/ head of bitmap
         // change the null-bitmap according to notNull[]
-        map<string, Type>::iterator s_it;
         int rank = nullPos;
         int num = 0;
         for (s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++) {
@@ -79,23 +82,35 @@ public:
         int len = 0;
         for (int i = 0; i < c.name.size(); i++) {
             string tempType = c.type[i];
-            offset.insert(pair<string, int>(c.name[i], len));
-            if (tempType == "int") {
+            if (tempType == "int")
                 len += 4;
+            else if (tempType == "varchar") {
+                int tempLen = atoi(c.length[i].c_str());
+                len += tempLen;
+            } else if (tempType == "bool") {
+                len += 1;
+            }
+        }
+        ex.length = len;
+        for (int i = c.name.size()-1; i >= 0; i--) {
+            string tempType = c.type[i];
+            if (tempType == "int") {
+                len -= 4;
                 Integer type(4, c.notNull[i], c.length[i]);
                 ex.attributes.insert(pair<string, Integer>(c.name[i], type));
             } else if (tempType == "varchar") {
                 int tempLen = atoi(c.length[i].c_str());
-                len += tempLen;
+                len -= tempLen;
                 Varchar type("xuhan", tempLen, c.notNull[i]);
                 ex.attributes.insert(pair<string, Varchar>(c.name[i], type));
             } else if (tempType == "bool") {
-                len += 1;
+                len -= 1;
                 Bool type(1, c.notNull[i]);
                 ex.attributes.insert(pair<string, Type>(c.name[i], type));
             }
+            offset.insert(pair<string, int>(c.name[i], len));
         }
-        ex.length = len;
+
         example = ex;
         // set typeNum
         typeNum = c.name.size();
@@ -143,6 +158,7 @@ public:
     // 3. _writeItem
     int writeItem(Attr attribute) {
         // get the first page -- page0
+        map<string, Type>::iterator s_it;
         int index;
         BufType b = bpm->getPage(_fileID, 0, index);
         bpm->access(index);
@@ -376,7 +392,7 @@ public:
     }
 
     void select(vector<AttrItem> attrs, JoinSql join, CondSql cond){
-
+        
     }
 
     void deleteItems(CondSql cond){
@@ -499,6 +515,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             ((Integer*)test->getAttr(item.attr2.attrName))->value){
                             ret = 0;
+                            //cout << "A" <<endl;
                             break;
                         }
                     }
@@ -506,6 +523,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
+                            //cout << "B" <<endl;
                             break;
                         } 
                     }
@@ -526,6 +544,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             a2){
                             ret = 0;
+                            //cout << "C" <<endl;
                             break;
                         } 
                     }
@@ -535,6 +554,7 @@ public:
                         if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
                             ((Varchar*)test->getAttr(item.attr2.attrName))->str){
                             ret = 0;
+                            //cout << "D" <<endl;
                             break;
                         }
                     }
@@ -542,6 +562,7 @@ public:
                         string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
                         if(compare != item.expression.str){
                             ret = 0;
+                            //cout << "E" <<endl;
                             break;
                         }
                     }
@@ -555,6 +576,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
+                            //cout << "F" <<endl;
                                 break;
                             }
                         }
@@ -562,6 +584,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
+                            //cout << "G" <<endl;
                                 break;
                             }
                         }
@@ -569,6 +592,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
+                            //cout << "H" <<endl;
                                 break;
                             }
                         }
@@ -576,6 +600,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
+                            //cout << "I" <<endl;
                                 break;
                             }
                         }
@@ -585,6 +610,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 item.expression.value){
                                 ret = 0;
+                            //cout << "J" <<endl;
                                 break;
                             }
                         }
@@ -592,6 +618,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 item.expression.value){
                                 ret = 0;
+                            //cout << "K" <<endl;
                                 break;
                             }
                         }
@@ -599,6 +626,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 item.expression.value){
                                 ret = 0;
+                            //cout << "L" <<endl;
                                 break;
                             }
                         }
@@ -606,6 +634,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 item.expression.value){
                                 ret = 0;
+                            //cout << "M" <<endl;
                                 break;
                             }
                         }
@@ -628,6 +657,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >=
                                 a2){
                                 ret = 0;
+                            //cout << "N" <<endl;
                                 break;
                             }
                         }
@@ -635,6 +665,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >
                                 a2){
                                 ret = 0;
+                            //cout << "O" <<endl;
                                 break;
                             }
                         }
@@ -642,6 +673,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <
                                 a2){
                                 ret = 0;
+                            //cout << "P" <<endl;
                                 break;
                             }
                         }
@@ -649,6 +681,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <=
                                 a2){
                                 ret = 0;
+                            //cout << "Q" <<endl;
                                 break;
                             }
                         }
