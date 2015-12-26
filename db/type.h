@@ -5,6 +5,7 @@
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 using namespace std;
 
 class Type {
@@ -16,6 +17,7 @@ public:
 		length = l;
 		notNull = n;
 	}
+	Type(){}
 	virtual int write(uint*, int&) {}
 	virtual int getType() {}
 	virtual void display() {}
@@ -23,7 +25,7 @@ public:
 
 class Null : public Type {
 public:
-	Null() : Type(0) {
+	Null() : Type(0, 0) {
 	}
 	virtual int write (uint* b, int& pos) {
 		// pos - nth byte of page b
@@ -40,7 +42,7 @@ public:
 class Varchar : public Type {
 public:
 	string str;
-	Varchar(string value, int len) : Type(len) {
+	Varchar(string value, int len, bool n) : Type(len, n) {
 		str = value;
 	}
 	int write (uint* b, int& pos) {
@@ -56,7 +58,7 @@ public:
 		return STRING;
 	}
 	virtual void display(){
-		printf("%s\n", str);
+		printf("%s\n", str.c_str());
 	}
 };
 
@@ -78,7 +80,7 @@ public:
 		return INTEGER;
 	}
 	virtual void display(){
-		printf("%s\n", str);
+		printf("%d\n", value);
 	}
 };
 
