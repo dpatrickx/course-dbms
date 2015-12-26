@@ -16,14 +16,14 @@ private:
         return tbMap[name];
     }
 public:
-    string name;
+    string dbName;
     PriQueue<string> tbName;
     map<string, Table*> tbMap;
 
     DB() {}
 
     DB(string n) {
-        name = n;
+        dbName = n;
     }
 
     void dropTB(string name) {
@@ -33,17 +33,17 @@ public:
         }
         Table* tb = getTable(name);
         // tb->drop();
-        system(("rm "+name+".txt").c_str());
+        system(("rm "dbName+"/"+name+".txt").c_str());
         tbName.remove(name);
         tbMap.erase(name);
     }
 
-    void createTB(TableCon c, string n) {
+    void createTB(TableCon c, string n, string path) {
         if (tbMap.count(n)) {
             printf("ERROR 1050 (42S01): Table '%s' already exists\n", n.c_str());
             return;
         }
-        Table table(c, n);
+        Table table(c, n, path);
         tbName.insert(n);
         tbMap.insert(map<string, Table*>::value_type(n, &table));
     }
