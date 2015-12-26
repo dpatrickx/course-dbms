@@ -3,13 +3,14 @@
 
 #include "dbManager.h"
 #include "auxSql.h"
+#include "para.h"
 
 static DBManager* manager;
 
 class Sql{
 public:
     int sqlType;
-    virtual void work();
+    virtual void work() {}
 };
 
 class CreateDbSql : public Sql {
@@ -17,7 +18,7 @@ public:
     string dbName;
 
     CreateDbSql() {
-        sqlType = CREATEDB;
+        sqlType = CREATEDBSQL;
     }
 
     void work() {
@@ -37,7 +38,7 @@ class UseDbSql : public Sql {
 public:
     string dbName;
     UseDbSql() {
-        sqlType = USEDB;
+        sqlType = USEDBSQL;
     }
     UseDbSql(string d) {
         dbName = d;
@@ -59,7 +60,7 @@ class DropDbSql : public Sql {
 public:
     string dbName;
     DropDbSql() {
-        sqlType = DROPDB;
+        sqlType = DROPDBSQL;
     }
     DropDbSql(string d) {
         dbName = d;
@@ -82,7 +83,7 @@ public:
     string dbName;
 
     ShowDbSql() {
-        sqlType = SHOWDB;
+        sqlType = SHOWDBSQL;
     }
 
     void init(string n) {
@@ -108,7 +109,7 @@ public:
     }
 
     CreateTbSql() {
-        sqlType = CREATETB;
+        sqlType = CREATETBSQL;
     }
     CreateTbSql(string n, TableCon c) {
         // get attr
@@ -129,8 +130,9 @@ public:
 };
 class ShowTbSql : public Sql {
 public:
+    string tbName;
     ShowTbSql() {
-        sqlType = SHOWTB;
+        sqlType = SHOWTBSQL;
     }
 
     void work() {
@@ -149,7 +151,7 @@ public:
     string tbName;
 
     DropTbSql() {
-        sqlType = DROPTB;
+        sqlType = DROPTBSQL;
     }
 
     void work() {
@@ -172,7 +174,7 @@ public:
     vector<vector<string> > valueSqls;
 
     InsertSql() {
-        sqlType = INSERT;
+        sqlType = INSERTSQL;
     }
     InsertSql(string tab, vector<string> ite, vector<vector<string> > val) {
         valueSqls = val;
@@ -207,7 +209,7 @@ public:
 };
 
 
-// select attrs from tb1 joinsql condsql
+// select attrs from tables condsql
 class SelectSql : public Sql {
 public:
     vector<AttrItem> attrs;
@@ -215,7 +217,7 @@ public:
     CondSql cond;
 
     SelectSql() {
-
+        sqlType = SELECTSQL;
     }
     SelectSql(vector<AttrItem> a, vector<string> t, CondSql c) {
         attrs = a;
@@ -230,7 +232,7 @@ public:
     }
 
     void work() {
-        manager->tbWork(attrs, tb1, join, cond);
+        manager->tbWork(attrs, tables, cond);
     }
 
     void display() {
@@ -255,7 +257,7 @@ public:
     string tableName;
     CondSql cond;
     DeteleSql() {
-        sqlType = DELETE;
+        sqlType = DELETESQL;
     }
     DeteleSql(string t, CondSql c) {
         tableName = t;
@@ -285,7 +287,7 @@ public:
     vector<CondItem> set;
 
     UpdateSql() {
-        sqlType = UPDATE;
+        sqlType = UPDATESQL;
     }
     UpdateSql(string n, CondSql c, vector<CondItem> s) {
         tableName = n;

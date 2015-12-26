@@ -38,7 +38,7 @@ yin         ("\'"|"\"")
 "TABLE"|"table"                     {   yylval.m_sId = "table";     return TABLE;       }
 "IF"|"if"                           {   yylval.m_sId = "if";        return IF;          }
 "IS"|"is"                           {   yylval.m_sId = "is";        return IS;          }
-"NULL"|"null"                       {   yylval.m_sId = "null";      return NUL;        }
+"NULL"|"null"                       {   yylval.m_sId = "null";      return NULLL;        }
 "EXISTS"|"exists"                   {   yylval.m_sId = "exists";    return EXISTS;      }
 "JOIN"|"join"                       {   yylval.m_sId = "join";      return JOIN;        }
 "ON"|"on"                           {   yylval.m_sId = "on";        return ON;          }

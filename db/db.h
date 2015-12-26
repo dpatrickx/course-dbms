@@ -5,6 +5,7 @@
 #define DB_H
 
 // #include "table.h"
+#include "auxSql.h"
 #include "../utils/PriQueue.h"
 #include <map>
 
@@ -16,7 +17,7 @@ private:
 public:
     string name;
     PriQueue<string> tbName;
-    map<string, table*> tbMap;
+    // map<string, table*> tbMap;
 
     DB() {}
 

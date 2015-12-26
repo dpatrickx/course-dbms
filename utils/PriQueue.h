@@ -20,6 +20,10 @@ public:
 		_elem = new T[n];
 	}
 
+	int size() {
+		return _size;
+	}
+
 	int insert (T ele) {
 		if (_size == _capa-1)
 			expand();
@@ -54,6 +58,10 @@ public:
 		}
 		_size--;
 		return 1;
+	}
+
+	T operator [] (int rank) {
+		return _elem[rank];
 	}
 
 	void expand() {
