@@ -27,12 +27,13 @@ public:
 		}
 		return flag;
 	}
-	Type getAttr(string target){
+	Type* getAttr(string target){
 		// map<string, Type>::iterator s_it;
 		// s_it = attributes.find(target);
 		// if(s_it == attrName.end())
 		// 	return NULL;
-		Type targetOff = attributes[target];
+		Type* targetOff = new Type();
+		targetOff = &attributes[target];
 		return targetOff;
 	}
 
@@ -40,7 +41,7 @@ public:
 		// display all the attributes
 		map<string, Type>::iterator s_it;
 		for(s_it = attributes.begin(); s_it != attributes.end(); i++){
-			s_it->second.dispay(b, pos);
+			s_it->second.display(b, pos);
 		}
 	}
 

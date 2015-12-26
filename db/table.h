@@ -210,8 +210,8 @@ public:
             for(int j = 0; j < slotNum; j++){
                 char* bb = (char*)b + j*length;
                 bb += offset[name];
-                int len = example.getAttr(name).length;
-                int type = example.getAttr(name).getType();
+                int len = example.getAttr(name)->length;
+                int type = example.getAttr(name)->getType();
                 if(type == INT){
                     uint* bbb = (uint*)bb;
                     if((*bbb) == (*(int*)equal)){
@@ -225,14 +225,14 @@ public:
                             char* position = (char*)b + j*length;
                             map<string, int>::iterator it;
                             for(it = offset.begin(); it != offset.end(); it++){
-                                int t = example.getAttr(it->first).getType();
+                                int t = example.getAttr(it->first)->getType();
                                 if(t == INTEGER){
                                     cout << it->first << ": ";
                                     cout << (*(uint*)(position + it->second)) << endl;
                                 }
                                 else if(t == STRING){
                                     cout << it->first << ": ";
-                                    for(int k = 0; k < example.getAttr(it->first).length; k++){
+                                    for(int k = 0; k < example.getAttr(it->first)->length; k++){
                                         cout << (*(position + it->second + k));
                                     }
                                     cout << endl;
@@ -258,14 +258,14 @@ public:
                             char* position = (char*)b + j*length;
                             map<string, int>::iterator it;
                             for(it = offset.begin(); it != offset.end(); it++){
-                                int t = example.getAttr(it->first).getType();
+                                int t = example.getAttr(it->first)->getType();
                                 if(t == INTEGER){
                                     cout << it->first << ": ";
                                     cout << (*(uint*)(position + it->second)) << endl;
                                 }
                                 else if(t == STRING){
                                     cout << it->first << ": ";
-                                    for(int k = 0; k < example.getAttr(it->first).length; k++){
+                                    for(int k = 0; k < example.getAttr(it->first)->length; k++){
                                         cout << (*(position + it->second + k));
                                     }
                                     cout << endl;
@@ -308,17 +308,18 @@ public:
                 map<string, int>::iterator it = offset.begin();
                 for(int j = 0; j < value[i].size(); j++){
                     string itemName = it->first;
-                    Type exam = example.getAttr(itemName);
-                    int type = exam.getType();
+                    Type* exam = new Type();
+                    exam = example.getAttr(itemName);
+                    int type = exam->getType();
                     if(type == INTEGER){
                         int val = atoi(value[i][j].c_str());
-                        (Integer)exam.value = val;
-                        writeItem->addAttr(exam, itemName);
+                        (Integer*)exam->value = val;
+                        writeItem->addAttr(*exam, itemName);
                     }
                     else if(type == STRING){
                         string val = value[i][j];
-                        (Varchar)exam.str = val;
-                        writeItem->addAttr(exam, itemName);
+                        (Varchar)exam->str = val;
+                        writeItem->addAttr(*exam, itemName);
                     }
                     it++;
                 }
@@ -333,17 +334,18 @@ public:
                     bool exist = 0;
                     for(int j = 0; j < items.size(); j++){
                         if(items[j] == itemName){
-                            Type exam = example.getAttr(itemName);
+                            Type* exam = new Type();
+                            exam = example.getAttr(itemName);
                             int type = exam.getType();
                             if(type == INTEGER){
                                 int val = atoi(value[i][j].c_str());
-                                (Integer)exam.value = val;
-                                writeItem->addAttr(exam, itemName);
+                                (Integer*)exam->value = val;
+                                writeItem->addAttr(*exam, itemName);
                             }
                             else if(type == STRING){
                                 string val = value[i][j];
-                                (Varchar)exam.str = val;
-                                writeItem->addAttr(exam, itemName);
+                                (Varchar*)exam->str = val;
+                                writeItem->addAttr(*exam, itemName);
                             }
                             exist = 1;
                             break;
@@ -351,7 +353,7 @@ public:
                     }
                     if(!exist){
                         Type* null = new Null();
-                        writeItem.addAttr(null, itemName);
+                        writeItem.addAttr(*null, itemName);
                     }
                 }
                 writeItem(*writeItem);
@@ -387,42 +389,44 @@ public:
                     char* bb = (char*)b + j*length;
                     for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
                         string itemName = it->first;
-                        Type temp = example.getAttr(itemName);
-                        int type = temp.getType();
+                        Type* temp = new Type();
+                        temp = example.getAttr(itemName);
+                        int type = temp->getType();
                         if(type == INTEGER){
                             int val = *((uint*)(bb + offset[itemName]));
-                            (Integer)temp.value = val;
-                            waitUpdate->addAttr(temp, itemName);
+                            (Integer*)temp->value = val;
+                            waitUpdate->addAttr(*temp, itemName);
                         }
                         else if(type == STRING){
                             char v[100];
-                            strncpy(v, bb + offset[itemName], temp.length);
+                            strncpy(v, bb + offset[itemName], temp->length);
                             string val(v);
-                            (Varchar)temp.str = val;
-                            waitUpdate->addAttr(temp, itemName);
+                            (Varchar*)temp->str = val;
+                            waitUpdate->addAttr(*temp, itemName);
                         }
                     }
                     for(int k = 0; k < set.size(); k++){
-                        Type temp = example.getAttr(set[k].attr1.attrName);
-                        int type = temp.getType();
+                        Type* temp = new Type();
+                        temp = example.getAttr(set[k].attr1.attrName);
+                        int type = temp->getType();
                         if(set[k].attr2 == NULL){
                             if(type == INTEGER){
-                                (Integer)temp.value = set[k].expression.value;
+                                (Integer*)temp->value = set[k].expression.value;
                             }
                             else if(type == STRING){
-                                (Char)temp.str = set[k].expression.str;
+                                (Varchar*)temp->str = set[k].expression.str;
                             }
                         }
                         else if(set[k].expression == NULL){
                             if(type == INTEGER){
-                                (Integer)temp.value = ((Integer)(waitUpdate.getAttr(set[k].attr2.attrName))).value;
+                                (Integer*)temp->value = ((Integer*)(waitUpdate.getAttr(set[k].attr2.attrName)))->value;
                             }
                             else if(type == STRING){
-                                (Char)temp.str = ((Char)(waitUpdate.getAttr(set[k].attr2.attrName))).str;
+                                (Varchar*)temp->str = ((Varchar*)(waitUpdate.getAttr(set[k].attr2.attrName)))->str;
                             }
                         }
                         else{
-                            int a2 = ((Integer)test.getAttr(set[k].attr2.attrName)).value;
+                            int a2 = ((Integer*)test.getAttr(set[k].attr2.attrName))->value;
                             if(set[k].expression.ops[0] == "+"){
                                 a2 += atoi(set[k].expression.numbers[0].c_str());
                             }
@@ -435,9 +439,9 @@ public:
                             else if(set[k].expression.ops[0] == "/"){
                                 a2 /= atoi(set[k].expression.numbers[0].c_str());
                             }
-                            (Integer)temp.value = a2;
+                            (Integer*)temp->value = a2;
                         }
-                        waitUpdate->attributes[set[k].attr1.attrName] = temp;
+                        waitUpdate->attributes[set[k].attr1.attrName] = *temp;
                     }
                     updateItem(i, j, waitUpdate);
                 }
@@ -455,43 +459,44 @@ public:
         char* bb = (char*)b + rID*length;
         for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
             string itemName = it->first;
-            Type temp = example.getAttr(itemName);
-            int type = temp.getType();
+            Type* temp = new Type();
+            temp = example.getAttr(itemName);
+            int type = temp->getType();
             if(type == INTEGER){
                 int val = *((uint*)(bb + offset[itemName]));
-                (Integer)temp.value = val;
-                test->addAttr(temp, itemName);
+                (Integer*)temp->value = val;
+                test->addAttr(*temp, itemName);
             }
             else if(type == STRING){
                 char v[100];
-                strncpy(v, bb + offset[itemName], temp.length);
+                strncpy(v, bb + offset[itemName], temp->length);
                 string val(v);
-                (Varchar)temp.str = val;
-                test->addAttr(temp, itemName);
+                (Varchar*)temp->str = val;
+                test->addAttr(*temp, itemName);
             }
         }
         bool ret = 1;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
             if(item.judgeOp == "="){
-                int type = test->getAttr(item.attr1.attrName).getType();
+                int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTEGER){
                     if(item.expression == NULL){
-                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
-                            ((Integer)test->getAttr(item.attr2.attrName)).value){
+                        if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
+                            ((Integer*)test->getAttr(item.attr2.attrName))->value){
                             ret = 0;
                             break;
                         }
                     }
                     else if(attr2 == NULL){
-                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
+                        if(((Integer)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
                             break;
                         } 
                     }
                     else{
-                        int a2 = ((Integer)test->getAttr(item.attr2.attrName)).value;
+                        int a2 = ((Integer*)test->getAttr(item.attr2.attrName))->value;
                         if(item.expression.ops[0] == "+"){
                             a2 += atoi(item.expression.numbers[0].c_str());
                         }
@@ -504,7 +509,7 @@ public:
                         else if(item.expression.ops[0] == "/"){
                             a2 /= atoi(item.expression.numbers[0].c_str());
                         }
-                        if(((Integer)test->getAttr(item.attr1.attrName)).value != 
+                        if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             a2){
                             ret = 0;
                             break;
@@ -513,14 +518,14 @@ public:
                 }
                 else if(type == STRING){
                     if(item.expression == NULL){
-                        if(((Char)test->getAttr(item.attr1.attrName)).str != 
-                            ((Char)test->getAttr(item.attr2.attrName)).str){
+                        if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
+                            ((Varchar*)test->getAttr(item.attr2.attrName))->str){
                             ret = 0;
                             break;
                         }
                     }
                     else{
-                        string compare = "\'" + ((Char)test->getAttr(item.attr1.attrName)).str + "\'";
+                        string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
                         if(compare != item.expression.str){
                             ret = 0;
                             break;
@@ -529,33 +534,33 @@ public:
                 }
             }
             else{
-                int type = test->getAttr(item.attr1.attrName).getType();
+                int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTEGER){
                     if(item.expression == NULL){ // attr1 </<=/>/>=attr2
                         if(item.judgeOp == "<"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value >= 
-                                ((Integer)test->getAttr(item.attr2.attrName)).value){
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
+                                ((Integer)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == "<="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value > 
-                                ((Integer)test->getAttr(item.attr2.attrName)).value){
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
+                                ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value < 
-                                ((Integer)test->getAttr(item.attr2.attrName)).value){
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
+                                ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value <= 
-                                ((Integer)test->getAttr(item.attr2.attrName)).value){
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
+                                ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
                                 break;
                             }
@@ -563,28 +568,28 @@ public:
                     }
                     else if(attr2 == NULL){ //attr1 </>/<=/>= expression
                         if(item.judgeOp == "<"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value >= 
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == "<="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value > 
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value < 
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 item.expression.value){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value <= 
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 item.expression.value){
                                 ret = 0;
                                 break;
@@ -592,7 +597,7 @@ public:
                         }
                     }
                     else{ // attr1 </<=/>/>= attr2 +/-/*// number
-                        int a2 = ((Integer)test->getAttr(item.attr2.attrName)).value;
+                        int a2 = ((Integer*)test->getAttr(item.attr2.attrName))->value;
                         if(item.expression.ops[0] == "+"){
                             a2 += atoi(item.expression.numbers[0].c_str());
                         }
@@ -606,28 +611,28 @@ public:
                             a2 /= atoi(item.expression.numbers[0].c_str());
                         }
                         if(item.judgeOp == "<"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value >=
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value >=
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == "<="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value >
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value >
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">="){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value <
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value <
                                 a2){
                                 ret = 0;
                                 break;
                             }
                         }
                         else if(item.judgeOp == ">"){
-                            if(((Integer)test->getAttr(item.attr1.attrName)).value <=
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value <=
                                 a2){
                                 ret = 0;
                                 break;
