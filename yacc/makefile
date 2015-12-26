@@ -6,10 +6,10 @@ OBJECT = main
 $(OBJECT): lex.yy.o  yacc.tab.o main.cpp
 	$(CC) lex.yy.o yacc.tab.o main.cpp -o $(OBJECT)
 
-lex.yy.o: lex.yy.c  yacc.tab.h  main.h ../db/dbManager.h ../db/sql.h ../db/auxSql.h
+lex.yy.o: lex.yy.c  yacc.tab.h  main.h ../db/dbManager.h ../db/sql.h ../db/auxSql.h ../db/table.h
 	$(CC) -c lex.yy.c
 
-yacc.tab.o: yacc.tab.c  main.h ../db/dbManager.h ../db/sql.h ../db/auxSql.h
+yacc.tab.o: yacc.tab.c  main.h ../db/dbManager.h ../db/sql.h ../db/auxSql.h ../db/table.h
 	$(CC) -c yacc.tab.c
 
 yacc.tab.c  yacc.tab.h: yacc.y
@@ -19,4 +19,4 @@ lex.yy.c: lex.l
 	$(LEX) lex.l
 
 clean:
-	@rm -f $(OBJECT)  *.OBJECT
+	@rm -f $(OBJECT)  *.OBJECT yacc.tab.c yacc.tab.h

@@ -52,6 +52,6 @@ typedef long long ll;
 typedef double db;
 typedef int INT;
 typedef int(cf)(uchar*, uchar*);
-int current = 0;
-int tt = 0;
+static int current = 0;
+static int tt = 0;
 #endif
