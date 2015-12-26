@@ -67,15 +67,18 @@ usedbsql:
     USE DATABASE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     }
     | USE IDENTIFIER ';' {
         $$.init($2);
         $$.display();
+        $$.work();
     };
 dropdbsql:
     DROP DATABASE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     };
 showdbsql:
     SHOW DATABASES ';' {
@@ -92,12 +95,14 @@ createdbsql:
     CREATE DATABASE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     };
 
 droptbsql:
     DROP TABLE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
+        $$.work();
     };
 showtbsql:
     SHOW TABLES ';' {
@@ -114,6 +119,7 @@ createtbsql:
     CREATE TABLE IDENTIFIER '(' tablecon ';' {
         $$.init($3, $5);
         $$.display();
+        $$.work();
     };
 tablecon:
     IDENTIFIER TYPE '(' INTEGER ')' CONNOP NULLL ',' tablecon {
@@ -188,11 +194,13 @@ insertsql:
     INSERT INTO IDENTIFIER '(' tableitems ')' VALUES valuesql {
         InsertSql ins($3, $5, $8);
         ins.display();
+        $$.work();
     }
     | INSERT INTO IDENTIFIER VALUES valuesql {
         vector<string> temp;
         InsertSql ins($3, temp, $5);
         ins.display();
+        $$.work();
     };
 tableitems:
     IDENTIFIER ',' tableitems {
@@ -227,11 +235,13 @@ selectsql:
     SELECT attrsql FROM tables WHERE condsql ';' {
         $$.init($2, $4, $6);
         $$.display();
+        $$.work();
     }
     | SELECT attrsql FROM tables ';' {
         CondSql cond;
         $$.init($2, $4, cond);
         $$.display();
+        $$.work();
     };
 attrsql:
     '*' {
@@ -401,22 +411,26 @@ deletesql:
     DELETE FROM IDENTIFIER WHERE condsql ';' {
         $$.init($3, $5);
         $$.display();
+        $$.work();
     }
     | DELETE FROM IDENTIFIER ';' {
         CondSql cond;
         $$.init($3, cond);
         $$.display();
+        $$.work();
     };
 
 updatesql:
     UPDATE IDENTIFIER SET setsql WHERE condsql ';' {
         $$.init($2, $6, $4);
         $$.display();
+        $$.work();
     }
     | UPDATE IDENTIFIER SET setsql ';' {
         CondSql cond;
         $$.init($2, cond, $4);
         $$.display();
+        $$.work();
     };
 
 setsql:

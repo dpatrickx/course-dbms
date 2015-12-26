@@ -5,7 +5,7 @@
 #include "auxSql.h"
 #include "para.h"
 
-static DBManager* manager;
+static DBManager* manager = new DBManager("./");
 
 class Sql{
 public:
@@ -30,7 +30,7 @@ public:
     }
 
     void display() {
-        cout<<"create database "<<dbName<<endl;
+        cout<<"SQL:  create database "<<dbName<<endl;
     }
 };
 
@@ -52,7 +52,7 @@ public:
         dbName = d;
     }
     void display() {
-        cout<<"use database "<<dbName<<endl;
+        cout<<"SQL:  use database "<<dbName<<endl;
     }
 };
 
@@ -74,7 +74,7 @@ public:
         dbName = d;
     }
     void display() {
-        cout<<"drop databaes "<<dbName<<endl;
+        cout<<"SQL:  drop databaes "<<dbName<<endl;
     }
 };
 
@@ -95,7 +95,10 @@ public:
     }
 
     void display() {
-        cout<<"show database "<<dbName<<endl;
+        if (dbName != "")
+            cout<<"SQL:  show database "<<dbName<<endl;
+        else
+            cout<<"SQL:  show databases\n";
     }
 };
 

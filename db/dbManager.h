@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 
 class DBManager {
@@ -18,18 +19,18 @@ private:
         return dbMap[name];
     }
 public:
-    PriQueue<string> dbName;
-    map<string, DB*> dbMap;
-    string currDbName;
-    string root;        // root/dbname
-    DB* currDb;
-
     DBManager(string r) {
         root = r;
         if (root[root.size()-1] != '/')
             root += "/";
         currDbName = "";
     }
+
+    PriQueue<string> dbName;
+    map<string, DB*> dbMap;
+    string currDbName;
+    string root;        // root/dbname
+    DB* currDb;
 
     void showDBs() {
         cout<<"+--------------------+\n";
@@ -46,7 +47,7 @@ public:
             currDb = getDB(n);
         }
         else
-            printf("ERROR 1049 (42000): Unknown database%s\n", n.c_str());
+            printf("ERROR 1049 (42000): Unknown database %s\n", n.c_str());
     }
 
     void createDB(DB* d, string n) {
@@ -66,6 +67,7 @@ public:
         }
         dbName.remove(name);
         dbMap.erase(name);
+        system(("rm -r "+name).c_str());
     }
 
     void dbWork(string n, int type) {
@@ -74,6 +76,7 @@ public:
             case CREATEDBSQL:
                 db = new DB(n);
                 createDB(db, n);
+                cout<<"createDB("<<n<<")\n";
                 break;
             case SHOWDBSQL:
                 if (n == "")
@@ -85,10 +88,12 @@ public:
                 }
                 break;
             case DROPDBSQL:
+                cout<<"dropDB("<<n<<")\n";
                 dropDB(n);
                 break;
             case USEDBSQL:
                 useDB(n);
+                cout<<"useDB("<<currDbName<<")\n";
                 break;
             default: break;
         }
@@ -162,5 +167,7 @@ public:
             cout<<dbName[i]<<endl;
     }
 };
+
+// DBManager* DBManager::_instance = 0;
 
 #endif
