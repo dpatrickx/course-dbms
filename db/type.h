@@ -53,7 +53,7 @@ public:
 	    pos += length;
 	}
 	virtual int getType(){
-		return CHAR;
+		return STRING;
 	}
 	virtual void display(){
 		printf("%s\n", str);
@@ -75,7 +75,7 @@ public:
 	    pos += length;
 	}
 	virtual int getType(){
-		return INT;
+		return INTEGER;
 	}
 	virtual void display(){
 		printf("%s\n", str);
@@ -86,6 +86,9 @@ class Bool : public Type {
 public:
 	bool value;
 	void write(uint* b, int& pos) {}
+	virtual int getType(){
+		return BOOL;
+	}
 };
 
 #endif

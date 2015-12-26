@@ -3,6 +3,8 @@
 
 #include "../bufmanager/BufPageManager.h"
 #include "attr.h"
+#include "para.h"
+#include "auxSql.h"
 #include <iostream>
 #include <string.h>
 #include <vector>
@@ -271,7 +273,7 @@ public:
                     }
                 }
                 else if(type == CHAR){
-                    if(strncasecmp(bb, equal, len) == 0){
+                    if(strncmp(bb, equal, len) == 0){
                         if(sel == DELETE){
                             removeItem(i, j);
                         }
@@ -305,6 +307,24 @@ public:
                 }
             }
         }
+    }
+
+    // update Item:
+    // 1. _writeItem
+    int updateItem(int pageID, int rID, Attr attribute) {
+        // the slot must be written before, only need to rewrite the item
+        _writeItem(pageID, rID, attribute);
+    }
+
+    BufType getItem(int pageID, int rID) {
+        int index;
+        BufType b = bpm->getPage(_fileID, pageID, index);
+        bpm->access(index);
+        return b+(length*rID);
+    }
+
+    void display() {
+        cout<<name<<endl;
     }
 
     void insert(vector<string> items, vector<vector<string>> value){
@@ -365,22 +385,286 @@ public:
         }
     }
 
-    // update Item:
-    // 1. _writeItem
-    int updateItem(int pageID, int rID, Attr attribute) {
-        // the slot must be written before, only need to rewrite the item
-        _writeItem(pageID, rID, attribute);
+    void select(vector<AttrItem> attrs, JoinSql join, CondSql cond){
+
     }
 
-    BufType getItem(int pageID, int rID) {
+    void deleteItems(CondSql cond){
+        for(int i = 0; i < pageNum; i++){
+            for(int j = 0; j < slotNum; j++){
+                if(conform(cond, i, j)){
+                    int index;
+                    BufType b = bpm->getPage(_fileID, i, index);
+                    bpm->markDirty(index);
+                    removeItem(i, j);
+                }
+            }
+        }
+    }
+
+    void update(vector<CondItem> set, CondSql cond){
+        for(int i = 0; i < pageNum; i++){
+            for(int j = 0; j < slotNum; j++){
+                if(conform(cond, i, j)){
+                    Attr* waitUpdate = new Attr();
+                    int index;
+                    BufType b = bpm->getPage(_fileID, i, index);
+                    bpm->markDirty(index);
+                    char* bb = (char*)b + j*length;
+                    for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+                        string itemName = it->first;
+                        Type temp = example.getAttr(itemName);
+                        int type = temp.getType();
+                        if(type == INTEGER){
+                            int val = *((uint*)(bb + offset[itemName]));
+                            (Integer)temp.value = val;
+                            waitUpdate->addAttr(temp, itemName);
+                        }
+                        else if(type == STRING){
+                            char v[100];
+                            strncpy(v, bb + offset[itemName], temp.length);
+                            string val(v);
+                            (Varchar)temp.str = val;
+                            waitUpdate->addAttr(temp, itemName);
+                        }
+                    }
+                    for(int k = 0; k < set.size(); k++){
+                        Type temp = example.getAttr(set[k].attr1.attrName);
+                        int type = temp.getType();
+                        if(set[k].attr2 == NULL){
+                            if(type == INTEGER){
+                                (Integer)temp.value = set[k].expression.value;
+                            }
+                            else if(type == STRING){
+                                (Char)temp.str = set[k].expression.str;
+                            }
+                        }
+                        else if(set[k].expression == NULL){
+                            if(type == INTEGER){
+                                (Integer)temp.value = ((Integer)(waitUpdate.getAttr(set[k].attr2.attrName))).value;
+                            }
+                            else if(type == STRING){
+                                (Char)temp.str = ((Char)(waitUpdate.getAttr(set[k].attr2.attrName))).str;
+                            }
+                        }
+                        else{
+                            int a2 = ((Integer)test.getAttr(set[k].attr2.attrName)).value;
+                            if(set[k].expression.ops[0] == "+"){
+                                a2 += atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "-"){
+                                a2 -= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "*"){
+                                a2 *= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "/"){
+                                a2 /= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            (Integer)temp.value = a2;
+                        }
+                        waitUpdate->attributes[set[k].attr1.attrName] = temp;
+                    }
+                    updateItem(i, j, waitUpdate);
+                }
+            }
+        }
+    }
+
+    bool conform(CondSql cond, int pageID, int rID){ // build a attr according to pageID & rID
+        if(cond.conditions.size() == 0)
+            return 1;
+        Attr* test = new Attr();
         int index;
         BufType b = bpm->getPage(_fileID, pageID, index);
         bpm->access(index);
-        return b+(length*rID);
-    }
-
-    void display() {
-        cout<<name<<endl;
+        char* bb = (char*)b + rID*length;
+        for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+            string itemName = it->first;
+            Type temp = example.getAttr(itemName);
+            int type = temp.getType();
+            if(type == INTEGER){
+                int val = *((uint*)(bb + offset[itemName]));
+                (Integer)temp.value = val;
+                test->addAttr(temp, itemName);
+            }
+            else if(type == STRING){
+                char v[100];
+                strncpy(v, bb + offset[itemName], temp.length);
+                string val(v);
+                (Varchar)temp.str = val;
+                test->addAttr(temp, itemName);
+            }
+        }
+        bool ret = 1;
+        for(int i = 0; i < cond.conditions.size(); i++){
+            CondItem item = cond.conditions[i];
+            if(item.jugeOp == "="){
+                int type = test.getAttr(item.attr1.attrName).getType();
+                if(type == INTEGER){
+                    if(item.expression == NULL){
+                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
+                            ((Integer)test.getAttr(item.attr2.attrName)).value){
+                            ret = 0;
+                            break;
+                        }
+                    }
+                    else if(attr2 == NULL){
+                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
+                            item.expression.value){
+                            ret = 0;
+                            break;
+                        } 
+                    }
+                    else{
+                        int a2 = ((Integer)test.getAttr(item.attr2.attrName)).value;
+                        if(item.expression.ops[0] == "+"){
+                            a2 += atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "-"){
+                            a2 -= atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "*"){
+                            a2 *= atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "/"){
+                            a2 /= atoi(item.expression.numbers[0].c_str());
+                        }
+                        if(((Integer)test.getAttr(item.attr1.attrName)).value != 
+                            a2){
+                            ret = 0;
+                            break;
+                        } 
+                    }
+                }
+                else if(type == STRING){
+                    if(item.expression == NULL){
+                        if(((Char)test.getAttr(item.attr1.attrName)).str != 
+                            ((Char)test.getAttr(item.attr2.attrName)).str){
+                            ret = 0;
+                            break;
+                        }
+                    }
+                    else{
+                        string compare = "\'" + ((Char)test.getAttr(item.attr1.attrName)).str + "\'";
+                        if(compare != item.expression.str){
+                            ret = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+            else{
+                int type = test.getAttr(item.attr1.attrName).getType();
+                if(type == INTEGER){
+                    if(item.expression == NULL){ // attr1 </<=/>/>=attr2
+                        if(item.jugeOp == "<"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
+                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == "<="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
+                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
+                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
+                                ((Integer)test.getAttr(item.attr2.attrName)).value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                    }
+                    else if(attr2 == NULL){ //attr1 </>/<=/>= expression
+                        if(item.jugeOp == "<"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
+                                item.expression.value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == "<="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
+                                item.expression.value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
+                                item.expression.value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
+                                item.expression.value){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                    }
+                    else{ // attr1 </<=/>/>= attr2 +/-/*// number
+                        int a2 = ((Integer)test.getAttr(item.attr2.attrName)).value;
+                        if(item.expression.ops[0] == "+"){
+                            a2 += atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "-"){
+                            a2 -= atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "*"){
+                            a2 *= atoi(item.expression.numbers[0].c_str());
+                        }
+                        else if(item.expression.ops[0] == "/"){
+                            a2 /= atoi(item.expression.numbers[0].c_str());
+                        }
+                        if(item.jugeOp == "<"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value >= 
+                                a2){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == "<="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value > 
+                                a2){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">="){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value < 
+                                a2){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.jugeOp == ">"){
+                            if(((Integer)test.getAttr(item.attr1.attrName)).value <= 
+                                a2){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else{ret = 0;cout << "Condition Fault" << endl;}
+            }
+        }
+        return ret;
     }
 };
 
