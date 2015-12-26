@@ -391,8 +391,31 @@ public:
         }
     }
 
-    void select(vector<AttrItem> attrs, JoinSql join, CondSql cond){
-        
+    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond){
+        for(int i = 0; i < pageNum; i++){
+            for(int j = 0; j < slotNum; j++){
+                if(conform(cond, i, j)){
+                    int index;
+                    BufType b = bpm->getPage(_fileID, i, index);
+                    char* bb = (char*)b;
+                    for(int k = 0; k < attrs.size(); k++){
+                        Type* temp = new Type();
+                        temp = example.getAttr(attrs[k].attrName);
+                        int off = offset[attrs[k].attrName];
+                        int type = temp->getType();
+                        if(type == INTE){
+                            cout << "select " << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
+                        }
+                        else if(type == STRING){
+                            int len = temp->length;
+                            char c[len];
+                            strncpy(c, bb+off, len);
+                            cout << "select " << attrs[k].attrName << ": " << c << endl;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void deleteItems(CondSql cond){
