@@ -20,32 +20,6 @@ using namespace std;
 // each item(length bytes):
 //      null bitmap - 0: null, 1: not null
 
-class TableCon{
-public:
-    vector<string> name;
-    vector<string> type;
-    vector<string> length;
-    vector<bool>   notNull;
-    string priKey;
-
-    TableCon() {}
-
-    void init(vector<string> n, vector<string> t, string p) {
-        name = n;
-        type = t;
-        priKey = p;
-    }
-
-    void display() {
-        cout<<"attr size is "<<name.size()<<endl;
-        for (int i = 0; i < name.size(); i++) {
-            cout<<i<<" :";
-            cout<<name[i]<<' '<<type[i]<<' '<<notNull[i]<<endl;
-        }
-        cout<<"primary key is "<<priKey<<endl;
-    }
-};
-
 class Table {
 private:
     int _fileID;
@@ -402,7 +376,7 @@ public:
         }
     }
 
-    void update(vector<CondItem> set, CondSql cond){
+    void update(vector<CondItem> set, CondSql cond) {
         for(int i = 0; i < pageNum; i++){
             for(int j = 0; j < slotNum; j++){
                 if(conform(cond, i, j)){

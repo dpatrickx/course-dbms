@@ -1,13 +1,8 @@
 #ifndef SQL_H
 #define SQL_H
 
-#include "para.h"
-#include "table.h"
 #include "dbManager.h"
-#include <iostream>
-#include <string>
-#include <vector>
-using namespace std;
+#include "auxSql.h"
 
 static DBManager* manager;
 
