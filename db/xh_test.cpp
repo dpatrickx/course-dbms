@@ -31,7 +31,7 @@ int main(){
 	TableCon* tbc = new TableCon();
 	tbc->init(n, type, "xuhan");
 	tbc->length = len;
-	Table* tb = new Table(*tbc, "test");
+	Table* tb = new Table(*tbc, "test", "db");
 	tb->example.display();
 	cout << tb->example.length << endl;
 	cout << endl;
@@ -64,10 +64,10 @@ int main(){
 	cond.conditions.push_back(conditem);
 	set.push_back(condi);
 
-	// tb->update(set, cond);
-	// tb->showTB(1);
-	cout << endl;
-	cout << tb->conform(cond, 1, 0) << endl;
+	// cout << endl;	
+	tb->update(set, cond);
+	tb->showTB(1);
+	// cout << tb->conform(cond, 1, 0) << endl;
 	//cout << tb->conform(cond, 1, 1) << endl;
 	//cout << tb->conform(cond, 1, 2) << endl;
 }

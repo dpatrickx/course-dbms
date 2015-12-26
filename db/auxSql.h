@@ -65,7 +65,7 @@ public:
         value = atoi(num.c_str());
     }
     int isNull() {
-        if (numbers.size()==0 and str=="")
+        if (numbers.size()==0 and str=="" and value == 0)
             return 1;
         return 0;
     }
