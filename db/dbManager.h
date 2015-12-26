@@ -116,7 +116,7 @@ public:
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->createTB(c, n);
+        currDb->createTB(c, n, currDbName);
     }
 
     void tbWork(string name, vector<string> t, vector<vector<string> > v) {

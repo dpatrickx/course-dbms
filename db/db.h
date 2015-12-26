@@ -33,7 +33,7 @@ public:
         }
         Table* tb = getTable(name);
         // tb->drop();
-        system(("rm "dbName+"/"+name+".txt").c_str());
+        system(("rm "+dbName+"/"+name+".txt").c_str());
         tbName.remove(name);
         tbMap.erase(name);
     }
@@ -50,7 +50,7 @@ public:
 
     void showTBs() {
         cout<<"+--------------------+\n";
-        cout<<"tables in "<<name<<endl;
+        cout<<"tables in "<<dbName<<endl;
         cout<<"+--------------------+\n";
         for (int i = 0; i < tbName.size(); i++)
             cout<<tbName[i]<<endl;
