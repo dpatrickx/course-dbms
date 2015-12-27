@@ -53,11 +53,12 @@ private:
         // change the null-bitmap according to notNull[]
         int rank = nullPos;
         int num = 0;
-        for (s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++) {
-            if (s_it->second.notNull)
-                bb[pos+rank] |= (1<<(7-num));
-            else
+        for (int i = 0; i < sequence.size(); i++) {
+            Type* type = attr.getAttr(sequence[i]);
+            if (type->type == NUL)
                 bb[pos+rank] &= ~(1<<(7-num));
+            else
+                bb[pos+rank] |= (1<<(7-num));
             num++;
             if (num == 8) {
                 rank++;
@@ -347,22 +348,75 @@ public:
             for(int i = 0; i < value.size(); i++){
                 Attr* writeItems = new Attr();
                 //map<string, int>::iterator it = offset.begin();
+                bool conti = 0;
                 for(int j = 0; j < value[i].size(); j++){
                     string itemName = sequence[j];
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
                     if(type == INTE){
+                        bool isnull = 0;
+                        for(int k = 0; k < value[i][j].size(); k++){
+                            if(value[i][j][k] < '0' || value[i][j][k] > '9'){
+                                if(value[i][j] == "null"){
+                                    if(exam->notNull){
+                                        cout << "INPUT ERROR" << endl;
+                                        conti = 1;
+                                        break;
+                                    }
+                                    else{
+                                        Type* null = new Null();
+                                        writeItems->addAttr(*null, itemName);
+                                        isnull = 1;
+                                        break;
+                                    }
+                                }
+                                else{
+                                    cout << "INPUT ERROR" << endl;
+                                    conti = 1;
+                                    break;
+                                }
+                            }
+                        }
+                        if(conti){
+                            break;
+                        }
+                        if(isnull){
+                            continue;
+                        }
                         int val = atoi(value[i][j].c_str());
                         ((Integer*)exam)->value = val;
                         writeItems->addAttr(*exam, itemName);
                     }
                     else if(type == STRING){
+                        if(value[i][j][0] != '\'' || value[i][j][value[i][j].size()-1] != '\'' || value[i][j] == "null"){
+                            if(value[i][j] == "null"){
+                                if(exam->notNull){
+                                    cout << "INPUT ERROR" << endl;
+                                    conti = 1;
+                                }
+                                else{
+                                    Type* null = new Null();
+                                    writeItems->addAttr(*null, itemName);
+                                    continue;
+                                }
+                            }
+                            else{
+                                cout << "INPUT ERROR" << endl;
+                                conti = 1;
+                            }
+                        }
+                        if(conti){
+                            break;
+                        }
                         string val = value[i][j];
                         ((Varchar*)exam)->str = val;
                         writeItems->addAttr(*exam, itemName);
                     }
                     //it++;
+                }
+                if(conti){
+                    continue;
                 }
                 writeItem(*writeItems);
             }
@@ -370,6 +424,7 @@ public:
         else{
             for(int i = 0; i < value.size(); i++){
                 Attr* writeItems = new Attr();
+                bool conti = 0;
                 for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
                     string itemName = it->first;
                     bool exist = 0;
@@ -379,11 +434,60 @@ public:
                             exam = example.getAttr(itemName);
                             int type = exam->getType();
                             if(type == INTE){
+                                bool isnull = 0;
+                                for(int k = 0; k < value[i][j].size(); k++){
+                                    if(value[i][j][k] < '0' || value[i][j][k] > '9'){
+                                        if(value[i][j] == "null"){
+                                            if(exam->notNull){
+                                                cout << "INPUT ERROR" << endl;
+                                                conti = 1;
+                                                break;
+                                            }
+                                            else{
+                                                Type* null = new Null();
+                                                writeItems->addAttr(*null, itemName);
+                                                isnull = 1;
+                                                break;
+                                            }
+                                        }
+                                        else{
+                                            cout << "INPUT ERROR" << endl;
+                                            conti = 1;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(conti){
+                                    break;
+                                }
+                                if(isnull){
+                                    exist = 1;
+                                    break;
+                                }
                                 int val = atoi(value[i][j].c_str());
                                 ((Integer*)exam)->value = val;
                                 writeItems->addAttr(*exam, itemName);
                             }
                             else if(type == STRING){
+                                if(value[i][j][0] != '\'' || value[i][j][value[i][j].size()-1] != '\'' || value[i][j] == "null"){
+                                    if(value[i][j] == "null"){
+                                        if(exam->notNull){
+                                            cout << "INPUT ERROR" << endl;
+                                            conti = 1;
+                                            break;
+                                        }
+                                        else{
+                                            Type* null = new Null();
+                                            writeItems->addAttr(*null, itemName);
+                                            break;
+                                        }
+                                    }
+                                    else{
+                                        cout << "INPUT ERROR" << endl;
+                                        conti = 1;
+                                        break;
+                                    }
+                                }
                                 string val = value[i][j];
                                 ((Varchar*)exam)->str = val;
                                 writeItems->addAttr(*exam, itemName);
@@ -391,11 +495,17 @@ public:
                             exist = 1;
                             break;
                         }
+                        if(conti){
+                            break;
+                        }
                     }
                     if(!exist){
                         Type* null = new Null();
                         writeItems->addAttr(*null, itemName);
                     }
+                }
+                if(conti){
+                    continue;
                 }
                 writeItem(*writeItems);
             }
