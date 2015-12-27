@@ -105,7 +105,7 @@ public:
         length = len;
         nullPos = len;
         length += (c.name.size()/8+1);
-        for (int i = 0; i < c.name.size(); i++) {
+        for (int i = c.name.size()-1; i >= 0; i--) {
             string tempType = c.type[i];
             if (tempType == "int") {
                 len -= 4;
@@ -122,7 +122,7 @@ public:
                 ex.attributes.insert(pair<string, Type>(c.name[i], type));
             }
             offset.insert(pair<string, int>(c.name[i], len));
-            sequence.push_back(c.name[i]);
+            sequence.insert(sequence.begin(), c.name[i]);
         }
         example = ex;
         // set typeNum
@@ -309,9 +309,10 @@ public:
         if(items.size() == 0){
             for(int i = 0; i < value.size(); i++){
                 Attr* writeItems = new Attr();
-                map<string, int>::iterator it = offset.begin();
+                //map<string, int>::iterator it = offset.begin();
                 for(int j = 0; j < value[i].size(); j++){
-                    string itemName = it->first;
+                    string itemName = sequence[j];
+                    cout << sequence[j] << "+++++++" << offset[sequence[j]] << endl;
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
@@ -325,7 +326,7 @@ public:
                         ((Varchar*)exam)->str = val;
                         writeItems->addAttr(*exam, itemName);
                     }
-                    it++;
+                    //it++;
                 }
                 writeItem(*writeItems);
             }
