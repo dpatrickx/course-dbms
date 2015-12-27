@@ -87,7 +87,8 @@ int main(){
 	CondItem conditem1("=", item11, item22, expr11);
 
 	cond1.conditions.push_back(conditem1);
-	attrs.push_back(item11);
+	AttrItem item12("", "*");
+	attrs.push_back(item12);
 	tables.push_back("test");
 	tb->select(attrs, cond1);
 	//cout << tb->conform(cond1, 1, 0) << endl;

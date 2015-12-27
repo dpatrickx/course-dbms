@@ -380,6 +380,24 @@ public:
                         char* bb = (char*)b;
                         bb += j*length;
                         for(int k = 0; k < attrs.size(); k++){
+                            if(attrs[k].attrName == "*"){
+                                for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+                                    Type* temp = new Type();
+                                    temp = example.getAttr(it->first);
+                                    int off = it->second;
+                                    int type = temp->getType();
+                                    if(type == INTE){
+                                        cout << "select " << it->first << ": " << *((uint*)(bb+off)) << endl;
+                                    }
+                                    else if(type == STRING){
+                                        int len = temp->length;
+                                        char c[len];
+                                        strncpy(c, bb+off, len);
+                                        cout << "select " << it->first << ": " << c << endl;
+                                    }
+                                }
+                                break;
+                            }
                             Type* temp = new Type();
                             temp = example.getAttr(attrs[k].attrName);
                             int off = offset[attrs[k].attrName];
