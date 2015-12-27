@@ -378,6 +378,7 @@ public:
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);
                         char* bb = (char*)b;
+                        bb += j*length;
                         for(int k = 0; k < attrs.size(); k++){
                             Type* temp = new Type();
                             temp = example.getAttr(attrs[k].attrName);

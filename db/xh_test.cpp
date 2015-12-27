@@ -76,19 +76,19 @@ int main(){
 
 
 	// //test select
-	// vector<AttrItem> attrs;
-	// vector<string> tables;
-	// CondSql cond1;
+	vector<AttrItem> attrs;
+	vector<string> tables;
+	CondSql cond1;
 
-	// AttrItem item11("", "bjs");
-	// AttrItem item22("", "");
-	// Expression expr11;
-	// expr11.str = "\'hhh\'";
-	// CondItem conditem1("=", item11, item22, expr11);
+	AttrItem item11("", "bjs");
+	AttrItem item22("", "");
+	Expression expr11;
+	expr11.str = "\'ok\'";
+	CondItem conditem1("=", item11, item22, expr11);
 
-	// cond1.conditions.push_back(conditem1);
-	// attrs.push_back(item11);
-	// tables.push_back("test");
-	// tb->select(attrs, cond1);
+	cond1.conditions.push_back(conditem1);
+	attrs.push_back(item11);
+	tables.push_back("test");
+	tb->select(attrs, cond1);
 	//cout << tb->conform(cond1, 1, 0) << endl;
 }
