@@ -370,7 +370,7 @@ public:
             char* bbt = (char*) bt;
             int j = 0;
             for(j = 0; j < slotNum; j++){
-                int pos = slotNum*length;
+                int pos = freeMapPos;
                 pos += (j/8);
                 int temp = j%8;
                 if (((bbt[pos]>>temp)&1)){
