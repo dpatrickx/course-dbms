@@ -142,20 +142,25 @@ public:
         int index;
         pageNum = 32;
         BufType b;
-        for (int i = 32;i >= 0;i--) {
+        char* bb;
+        int* bbb;
+        for (int i = pageNum;i >= 0;i--) {
             b = bpm->allocPage(_fileID, i, index, false);
             // set array b to 0, b[2048]
             memset(b, 0, 2048*sizeof(uint));
-            char* bb = (char*)b;
-            int* bbb = (int*) (bb+freeNumPos);
+            bb = (char*)b;
+            bbb = (int*) (bb+freeNumPos);
             bbb[0] = slotNum;
         }
-        b[0] = 32;
-        int numRank = 0;
+        b[0] = pageNum;
+        bb = (char*)(b+1);
+        int numRank = -1;
         for (int i = 0; i < pageNum; i++) {
-
+            if (i%8 == 0)
+                numRank++;
+            int tempp = i%8;
+            bb[1+numRank] &= (~(1<<(7-tempp)));
         }
-        b[1] = 0;   // 32 pages
         bpm->markDirty(index);
     }
 
@@ -234,8 +239,9 @@ public:
         }
         if (emptyPage == -1) {
             // add pages
+            cout<<"add pages\n";
             for (int i = 0; i < pageNum; i++) {
-                b = bpm->allocPage(_fileID, i, index, false);
+                b = bpm->allocPage(_fileID, pageNum+i, index, false);
                 // set array b to 0, b[2048]
                 memset(b, 0, 2048*sizeof(uint));
                 bb = (char*)b;
@@ -243,6 +249,18 @@ public:
                 bbb[0] = slotNum;
             }
             b = bpm->getPage(_fileID, 0, index);
+            bb = (char*)(b+1);
+            int numRank = pageNum/8;
+            int cha = pageNum%8;
+            for (int i = 0; i < pageNum; i++) {
+                if ((i+cha)%8 == 0)
+                    numRank++;
+                int tempp = ((i+cha))%8;
+                bb[numRank] &= (~(1<<(7-tempp)));
+            }
+            // add pages
+            emptyPage = pageNum+1;
+            cout<<"emptyPage = "<<emptyPage<<endl;
             pageNum += pageNum;
             b[0] = pageNum;
         }
@@ -253,9 +271,10 @@ public:
         // get number of free slots
         int* tempB = (int*) (bb+freeNumPos);
         int freeNum = tempB[0];
-        // cout<<"freeNum = "<<freeNum<<endl;
+        cout<<"freeNum = "<<freeNum<<endl;
         int emptyRid = 0;
         num = -1;
+        cout<<"emptyPage = "<<emptyPage<<endl;
         for (int i = 0; i < slotNum; i++) {
             if (i%8 == 0)
                 num++;
@@ -284,8 +303,7 @@ public:
                 break;
             }
         }
-        // cout<<"emptyPage = "<<emptyPage<<endl;
-        // cout<<"emptyRid = "<<emptyRid<<endl;
+        cout<<"emptyRid = "<<emptyRid<<endl;
         // writeItem
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;

@@ -47,5 +47,7 @@ struct YaccType
 };
 
 #define YYSTYPE YaccType
+#define YYINITDEPTH 5000
+#define YYIAXDEPTH 6000
 
 #endif
