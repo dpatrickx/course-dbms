@@ -44,35 +44,35 @@ int main(){
 	v.push_back("ok");
 	vector<vector<string> > vv;
 	vv.push_back(v);
-	for (int i = 0;i < 5; i++)
+	for (int i = 0;i < 10; i++)
 		tb->insert(n, vv);
 	tb->showTB(1);
 
 	// //test update
-	// string tableName = "test";
-	// CondSql cond;
-	// vector<CondItem> set;
+	string tableName = "test";
+	CondSql cond;
+	vector<CondItem> set;
 
-	// AttrItem item1("", "xuhan");
-	// AttrItem item2("", "");
-	// Expression expr;
-	// expr.value = 9;
-	// CondItem conditem("=", item1, item2, expr);
+	AttrItem item1("", "xuhan");
+	AttrItem item2("", "");
+	Expression expr;
+	expr.value = 9;
+	CondItem conditem("=", item1, item2, expr);
 
-	// AttrItem item3("", "bjs");
-	// Expression expr1;
-	// expr1.str = "hhh";
-	// CondItem condi("=", item3, item2, expr1);
+	AttrItem item3("", "bjs");
+	Expression expr1;
+	expr1.str = "hhh";
+	CondItem condi("=", item3, item2, expr1);
 
-	// cond.conditions.push_back(conditem);
-	// set.push_back(condi);
+	cond.conditions.push_back(conditem);
+	set.push_back(condi);
 
-	// // cout << endl;
-	// tb->update(set, cond);
-	// tb->showTB(1);
-	// //cout << tb->conform(cond, 1, 0) << endl << endl;
-	// //cout << tb->conform(cond, 1, 1) << endl;
-	// //cout << tb->conform(cond, 1, 2) << endl;
+	// cout << endl;
+	tb->update(set, cond);
+	tb->showTB(1);
+	//cout << tb->conform(cond, 1, 0) << endl << endl;
+	//cout << tb->conform(cond, 1, 1) << endl;
+	//cout << tb->conform(cond, 1, 2) << endl;
 
 
 	// //test select
@@ -83,7 +83,7 @@ int main(){
 	AttrItem item11("", "bjs");
 	AttrItem item22("", "");
 	Expression expr11;
-	expr11.str = "\'ok\'";
+	expr11.str = "\'hhh\'";
 	CondItem conditem1("=", item11, item22, expr11);
 
 	cond1.conditions.push_back(conditem1);
