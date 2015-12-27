@@ -461,7 +461,7 @@ public:
                                 waitUpdate->addAttr(*temp, itemName);
                             }
                             else if(type == STRING){
-                                char v[100];
+                                char v[temp->length+10];
                                 strncpy(v, bb + offset[itemName], temp->length);
                                 string val(v);
                                 ((Varchar*)temp)->str = val;
@@ -532,7 +532,7 @@ public:
                 test->addAttr(*temp, itemName);
             }
             else if(type == STRING){
-                char v[100];
+                char v[temp->length+10];
                 strncpy(v, bb + offset[itemName], temp->length);
                 string val(v);
                 ((Varchar*)temp)->str = val;
@@ -540,6 +540,7 @@ public:
             }
         }
         bool ret = 1;
+        cout << __LINE__ << endl;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
             if(item.judgeOp == "="){
@@ -549,7 +550,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             ((Integer*)test->getAttr(item.attr2.attrName))->value){
                             ret = 0;
-                            //cout << "A" <<endl;
+                            cout << "A" <<endl;
                             break;
                         }
                     }
@@ -557,7 +558,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
-                            //cout << "B" <<endl;
+                            cout << "B" <<endl;
                             break;
                         } 
                     }
@@ -578,7 +579,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             a2){
                             ret = 0;
-                            //cout << "C" <<endl;
+                            cout << "C" <<endl;
                             break;
                         } 
                     }
@@ -588,7 +589,7 @@ public:
                         if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
                             ((Varchar*)test->getAttr(item.attr2.attrName))->str){
                             ret = 0;
-                            //cout << "D" <<endl;
+                            cout << "D" <<endl;
                             break;
                         }
                     }
@@ -596,7 +597,7 @@ public:
                         string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
                         if(compare != item.expression.str){
                             ret = 0;
-                            //cout << "E" <<endl;
+                            cout << "E" <<endl;
                             break;
                         }
                     }
@@ -610,7 +611,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            //cout << "F" <<endl;
+                            cout << "F" <<endl;
                                 break;
                             }
                         }
@@ -618,7 +619,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            //cout << "G" <<endl;
+                            cout << "G" <<endl;
                                 break;
                             }
                         }
@@ -626,7 +627,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            //cout << "H" <<endl;
+                            cout << "H" <<endl;
                                 break;
                             }
                         }
@@ -634,7 +635,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            //cout << "I" <<endl;
+                            cout << "I" <<endl;
                                 break;
                             }
                         }
@@ -644,7 +645,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 item.expression.value){
                                 ret = 0;
-                            //cout << "J" <<endl;
+                            cout << "J" <<endl;
                                 break;
                             }
                         }
@@ -652,7 +653,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 item.expression.value){
                                 ret = 0;
-                            //cout << "K" <<endl;
+                            cout << "K" <<endl;
                                 break;
                             }
                         }
@@ -660,7 +661,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 item.expression.value){
                                 ret = 0;
-                            //cout << "L" <<endl;
+                            cout << "L" <<endl;
                                 break;
                             }
                         }
@@ -668,7 +669,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 item.expression.value){
                                 ret = 0;
-                            //cout << "M" <<endl;
+                            cout << "M" <<endl;
                                 break;
                             }
                         }
@@ -691,7 +692,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >=
                                 a2){
                                 ret = 0;
-                            //cout << "N" <<endl;
+                            cout << "N" <<endl;
                                 break;
                             }
                         }
@@ -699,7 +700,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >
                                 a2){
                                 ret = 0;
-                            //cout << "O" <<endl;
+                            cout << "O" <<endl;
                                 break;
                             }
                         }
@@ -707,7 +708,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <
                                 a2){
                                 ret = 0;
-                            //cout << "P" <<endl;
+                            cout << "P" <<endl;
                                 break;
                             }
                         }
@@ -715,7 +716,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <=
                                 a2){
                                 ret = 0;
-                            //cout << "Q" <<endl;
+                            cout << "Q" <<endl;
                                 break;
                             }
                         }
@@ -724,6 +725,7 @@ public:
                 else{ret = 0;cout << "Condition Fault" << endl;}
             }
         }
+        delete test;
         return ret;
     }
 };

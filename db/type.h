@@ -37,11 +37,11 @@ public:
 		    for (int i = 0;i < str.size();i++) {
 		        *(bb+i) = str[i];
 		    }
-		    pos += length;
+		    if(str.size() < length){
+		    	*(bb+str.size()) = '\0';
+		    }
 		}
-		else if(type == NUL){
-			pos += length;
-		}
+		else if(type == NUL){}
 	}
 	virtual int getType() {return type;}
 	virtual void display() {
