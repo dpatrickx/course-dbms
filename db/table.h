@@ -68,7 +68,7 @@ public:
     string tbName;
     string path;    // path/name.txt
     Attr example;
-    int nullPos;    // offset of null bitmap in each item
+    int nullPos;     // offset of null bitmap in each item
     int freeNumPos;  // freeMapPos - 4
     int freeMapPos;  // offset of free bitmap in each page
 
