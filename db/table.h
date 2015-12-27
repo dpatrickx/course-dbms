@@ -16,6 +16,7 @@ using namespace std;
 //      n Bits: each bit reflect a page, 0-have space, 1-no space
 // each page(8192 Bytes):
 //      n*length data slot
+//      4 byte: num of free slot bb[slotNum*length]
 //      last n/8 Bytes - bit map for each data slot
 // each item(length bytes):
 //      null bitmap - 0: null, 1: not null
@@ -27,7 +28,6 @@ private:
     int slotNum;    // number of data slot
     int bitSize;    // number of bitmap bits in the end of page
     int typeNum;
-    int nullPos;    // offset of null bitmap in each item
     uint pageNum;   // first 4 bytes of first page of the file
     BufPageManager* bpm;
     FileManager* fm;
@@ -54,9 +54,9 @@ private:
         int num = 0;
         for (s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++) {
             if (s_it->second.notNull)
-                bb[rank] |= (1<<(7-num));
+                bb[pos+rank] |= (1<<(7-num));
             else
-                bb[rank] &= ~(1<<(7-num));
+                bb[pos+rank] &= ~(1<<(7-num));
             num++;
             if (num == 8) {
                 rank++;
@@ -68,6 +68,9 @@ public:
     string tbName;
     string path;    // path/name.txt
     Attr example;
+    int nullPos;    // offset of null bitmap in each item
+    int freeNumPos;  // freeMapPos - 4
+    int freeMapPos;  // offset of free bitmap in each page
 
     Table(const TableCon& c, string n, string root) {
         // set priKey
@@ -122,16 +125,17 @@ public:
         example = ex;
         // set typeNum
         typeNum = c.name.size();
-
-        // set slotNum, bitSize
-        slotNum = 8192/length;
-        int bitNum = (8192-slotNum*length)*8;
+        // set slotNum, bitSize, position
+        slotNum = 8188/length;
+        int bitNum = (8188-slotNum*length)*8;
         if (bitNum < slotNum) {
             int delta = (slotNum-bitNum)/(8*length+1)+1;
             slotNum -= delta;
             bitNum += delta*8*length;
         }
         bitSize = bitNum/8;
+        freeNumPos = slotNum*length;
+        freeMapPos = freeNumPos + 4;
         // init first page
         int index;
         pageNum = 32;
@@ -140,6 +144,9 @@ public:
             b = bpm->allocPage(_fileID, i, index, false);
             // set array b to 0, b[2048]
             memset(b, 0, 2048*sizeof(uint));
+            char* bb = (char*)b;
+            int* bbb = (int*) (bb+freeNumPos);
+            bbb[0] = slotNum;
         }
         b[0] = 32;
         b[1] = 0;   // 32 pages
@@ -196,57 +203,69 @@ public:
         map<string, Type>::iterator s_it;
         int index;
         BufType b = bpm->getPage(_fileID, 0, index);
+        char* bb = (char*)(b+1);
         bpm->access(index);
         // find a available page on the first page's bitmap
         // allocate 32 pages at each time, so the pageNum must be 32n
-        int num = pageNum/32;
+        int num = -1;
+        int oldNum = 0;
         int emptyPage = 1;
         // emptyPageTH page is available
-        for (int i = 1; i <= num; i++) {
-            int temp = b[i];
-            if (temp == -1) {
-                emptyPage += 32;
+        for (int i = 0; i < pageNum; i++) {
+            if (i%8 == 0)
+                num++;
+            char temp = bb[num];
+            int tempInt = (int)temp;
+            if (tempInt == -1) {
+                i += 7;
                 continue;
             }
-            for (int j = 31; j >= 0; j--) {
-                if (!(temp>>j & 1)) {
-                    emptyPage += (31-j);
-                    goto writeFlag1;
-                }
+            if (((temp>>(7-(i%8)))&1) == 0) {
+                emptyPage = i+1;
+                break;
             }
+
         }
-    writeFlag1:
         // find a available slot on the page's bitmap
         b = bpm->getPage(_fileID, emptyPage, index);
         bpm->markDirty(index);
+        bb = (char*) b;
+        // get number of free slots
+        int* tempB = (int*) (bb+freeNumPos);
+        int freeNum = tempB[0];
+        cout<<"freeNum = "<<freeNum<<endl;
         int emptyRid = 0;
-        int add = length*slotNum;
-        for (int i = 0; i < bitSize; i++) {
-            int temp = b[i+add];
-            if (b[i] == -1) {
-                emptyRid += 32;
+        num = -1;
+        for (int i = 0; i < slotNum; i++) {
+            if (i%8 == 0)
+                num++;
+            char temp = bb[num+freeMapPos];
+            int tempInt = (int)temp;
+            if (tempInt == -1) {
+                i += 7;
                 continue;
             }
-            for (int j = 31; j >= 0; j--) {
-                if (!(temp>>j & 1)) {
-                    emptyRid += (31-j);
-                    // put the empty slot bit to be 1
-                    b[i+add] |= (1<<j);
-                    // check if the page is full
-                    if (temp==-1 && i==bitSize-1) {
-                        // this page is full, put bit on first page to 1
-                        BufType c = bpm->getPage(_fileID, 0, index);
-                        bpm->access(index);
-                        int pagePos = emptyPage/32;
-                        pagePos++;
-                        int tempt = emptyPage%32;
-                        c[pagePos] |= (1<<(31-tempt));
-                    }
-                    goto writeFlag2;
+            if (((temp>>(7-(i%8)))&1) == 0) {
+                emptyRid = i;
+                // put the empty slot bit to be 1
+                bb[num+freeMapPos] |= (1<<(7-(i%8)));
+                freeNum--;
+                tempB[0] = freeNum;
+                // check if the page is full
+                if (freeNum == 0) {
+                    BufType c = bpm->getPage(_fileID, 0, index);
+                    char* cc = (char*)(c+1);
+                    bpm->markDirty(index);
+                    emptyPage--;
+                    int pagePos = emptyPage/8;
+                    int tempt = emptyPage%8;
+                    cc[pagePos] |= (1<<(7-tempt));
                 }
+                break;
             }
         }
-    writeFlag2:
+        cout<<"emptyPage = "<<emptyPage<<endl;
+        cout<<"emptyRid = "<<emptyRid<<endl;
         // writeItem
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
@@ -348,12 +367,13 @@ public:
         for(int i = 0; i < pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
+            char* bbt = (char*) bt;
             int j = 0;
             for(j = 0; j < slotNum; j++){
                 int pos = slotNum*length;
-                pos += (j/32);
-                int temp = j%32;
-                if (((bt[pos]>>temp)&1)){
+                pos += (j/8);
+                int temp = j%8;
+                if (((bbt[pos]>>temp)&1)){
                     if(conform(cond, i, j)){
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);

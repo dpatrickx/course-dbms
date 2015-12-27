@@ -33,7 +33,7 @@ int main(){
 	tbc->length = len;
 	tbc->notNull = notNull;
 	cout << "XXX" <<endl;
-	Table* tb = new Table(*tbc, "test", "db");
+	Table* tb = new Table(*tbc, "test", "test");
 	tb->example.display();
 	cout << tb->example.length << endl;
 	cout << endl;
@@ -44,50 +44,51 @@ int main(){
 	v.push_back("ok");
 	vector<vector<string> > vv;
 	vv.push_back(v);
-	tb->insert(n, vv);
+	for (int i = 0;i < 1000; i++)
+		tb->insert(n, vv);
 	tb->showTB(1);
 
-	//test update
-	string tableName = "test";
-	CondSql cond;
-	vector<CondItem> set;
+	// //test update
+	// string tableName = "test";
+	// CondSql cond;
+	// vector<CondItem> set;
 
-	AttrItem item1("", "xuhan");
-	AttrItem item2("", "");
-	Expression expr;
-	expr.value = 9;
-	CondItem conditem("=", item1, item2, expr);
+	// AttrItem item1("", "xuhan");
+	// AttrItem item2("", "");
+	// Expression expr;
+	// expr.value = 9;
+	// CondItem conditem("=", item1, item2, expr);
 
-	AttrItem item3("", "bjs");
-	Expression expr1;
-	expr1.str = "hhh";
-	CondItem condi("=", item3, item2, expr1);
+	// AttrItem item3("", "bjs");
+	// Expression expr1;
+	// expr1.str = "hhh";
+	// CondItem condi("=", item3, item2, expr1);
 
-	cond.conditions.push_back(conditem);
-	set.push_back(condi);
+	// cond.conditions.push_back(conditem);
+	// set.push_back(condi);
 
-	// cout << endl;	
-	tb->update(set, cond);
-	tb->showTB(1);
-	//cout << tb->conform(cond, 1, 0) << endl << endl;
-	//cout << tb->conform(cond, 1, 1) << endl;
-	//cout << tb->conform(cond, 1, 2) << endl;
+	// // cout << endl;
+	// tb->update(set, cond);
+	// tb->showTB(1);
+	// //cout << tb->conform(cond, 1, 0) << endl << endl;
+	// //cout << tb->conform(cond, 1, 1) << endl;
+	// //cout << tb->conform(cond, 1, 2) << endl;
 
 
-	//test select
-	vector<AttrItem> attrs;
-	vector<string> tables;
-	CondSql cond1;
+	// //test select
+	// vector<AttrItem> attrs;
+	// vector<string> tables;
+	// CondSql cond1;
 
-	AttrItem item11("", "bjs");
-	AttrItem item22("", "");
-	Expression expr11;
-	expr11.str = "\'hhh\'";
-	CondItem conditem1("=", item11, item22, expr11);
+	// AttrItem item11("", "bjs");
+	// AttrItem item22("", "");
+	// Expression expr11;
+	// expr11.str = "\'hhh\'";
+	// CondItem conditem1("=", item11, item22, expr11);
 
-	cond1.conditions.push_back(conditem1);
-	attrs.push_back(item11);
-	tables.push_back("test");
-	tb->select(attrs, cond1);
+	// cond1.conditions.push_back(conditem1);
+	// attrs.push_back(item11);
+	// tables.push_back("test");
+	// tb->select(attrs, cond1);
 	//cout << tb->conform(cond1, 1, 0) << endl;
 }
