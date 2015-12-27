@@ -30,22 +30,26 @@ int main(){
 	len.push_back("5");
 	vector<bool> notNull;
 	notNull.push_back(0);
-	notNull.push_back(0);
+	notNull.push_back(1);
 	notNull.push_back(1);
 	TableCon* tbc = new TableCon();
 	tbc->init(n, type, "xuhan");
 	tbc->length = len;
 	tbc->notNull = notNull;
-	cout << "XXX" <<endl;
+	tbc->checkAttrs.push_back("bjs");
+	vector<string> val;
+	val.push_back("\'aaa\'");
+	val.push_back("\'M\'");
+	tbc->checkVal.push_back(val);
 	Table* tb = new Table(*tbc, "test", "test");
-	tb->example.display();
+	//tb->example.display();
 	cout << tb->example.length << endl;
 	cout << endl;
 
 	//test insert
 	vector<string> v;
 	v.push_back("null");
-	v.push_back("null");
+	v.push_back("\'F\'");
 	v.push_back("\'fuck\'");
 	vector<vector<string> > vv;
 	vv.push_back(v);
@@ -75,7 +79,7 @@ int main(){
 
 	// cout << endl;
 	tb->update(set, cond);
-	tb->showTB(1);
+	//tb->showTB(1);
 	//cout << tb->conform(cond, 1, 0) << endl << endl;
 	//cout << tb->conform(cond, 1, 1) << endl;
 	//cout << tb->conform(cond, 1, 2) << endl;
