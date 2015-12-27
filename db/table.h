@@ -373,7 +373,7 @@ public:
                 int pos = freeMapPos;
                 pos += (j/8);
                 int temp = j%8;
-                if (((bbt[pos]>>temp)&1)){
+                if (((bbt[pos]>>(7-temp))&1)){
                     if(conform(cond, i, j)){
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);

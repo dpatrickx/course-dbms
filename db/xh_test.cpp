@@ -44,7 +44,7 @@ int main(){
 	v.push_back("ok");
 	vector<vector<string> > vv;
 	vv.push_back(v);
-	for (int i = 0;i < 1000; i++)
+	for (int i = 0;i < 5; i++)
 		tb->insert(n, vv);
 	tb->showTB(1);
 
