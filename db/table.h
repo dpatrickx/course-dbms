@@ -39,24 +39,26 @@ private:
     int _writeItem(int pageID, int rID, Attr attr) {
         int index;
         BufType b = bpm->getPage(_fileID, pageID, index);
+        char* bb = (char*)b;
         bpm->markDirty(index);
         int pos = rID*length; // posth byte of the page
         // attr.writeAttr(b, pos);
 
         map<string, Type>::iterator s_it;
-        for(s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++)
+        for(s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++){
             s_it->second.write(b, pos+offset[s_it->first]);
+        }
         // after write, pos is at the end of all values/ head of bitmap
         // change the null-bitmap according to notNull[]
         int rank = nullPos;
         int num = 0;
         for (s_it = attr.attributes.begin(); s_it != attr.attributes.end(); s_it++) {
             if (s_it->second.notNull)
-                b[rank] |= (1<<(31-num));
+                bb[rank] |= (1<<(7-num));
             else
-                b[rank] &= ~(1<<(31-num));
+                bb[rank] &= ~(1<<(7-num));
             num++;
-            if (num == 32) {
+            if (num == 8) {
                 rank++;
                 num = 0;
             }
@@ -95,6 +97,10 @@ public:
             }
         }
         ex.length = len;
+        // set length, nullPos
+        length = len;
+        nullPos = len;
+        length += (c.name.size()/8+1);
         for (int i = c.name.size()-1; i >= 0; i--) {
             string tempType = c.type[i];
             if (tempType == "int") {
@@ -113,14 +119,10 @@ public:
             }
             offset.insert(pair<string, int>(c.name[i], len));
         }
-
         example = ex;
         // set typeNum
         typeNum = c.name.size();
-        // set length, nullPos
-        length = len;
-        nullPos = len;
-        length += (c.name.size()/8+1);
+
         // set slotNum, bitSize
         slotNum = 8192/length;
         int bitNum = (8192-slotNum*length)*8;
@@ -182,6 +184,7 @@ public:
                 cout<<((bb[i]>>j)&1)<<'-';
             cout<<endl;
         }
+        cout << endl;
     }
 
     // write Item:
@@ -343,24 +346,32 @@ public:
 
     void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond){
         for(int i = 0; i < pageNum; i++){
-            for(int j = 0; j < slotNum; j++){
-                if(conform(cond, i, j)){
-                    int index;
-                    BufType b = bpm->getPage(_fileID, i, index);
-                    char* bb = (char*)b;
-                    for(int k = 0; k < attrs.size(); k++){
-                        Type* temp = new Type();
-                        temp = example.getAttr(attrs[k].attrName);
-                        int off = offset[attrs[k].attrName];
-                        int type = temp->getType();
-                        if(type == INTE){
-                            cout << "select " << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
-                        }
-                        else if(type == STRING){
-                            int len = temp->length;
-                            char c[len];
-                            strncpy(c, bb+off, len);
-                            cout << "select " << attrs[k].attrName << ": " << c << endl;
+            int index;
+            BufType bt = bpm->getPage(_fileID, i, index);
+            int j = 0;
+            for(j = 0; j < slotNum; j++){
+                int pos = slotNum*length;
+                pos += (j/32);
+                int temp = j%32;
+                if (((bt[pos]>>temp)&1)){
+                    if(conform(cond, i, j)){
+                        int index;
+                        BufType b = bpm->getPage(_fileID, i, index);
+                        char* bb = (char*)b;
+                        for(int k = 0; k < attrs.size(); k++){
+                            Type* temp = new Type();
+                            temp = example.getAttr(attrs[k].attrName);
+                            int off = offset[attrs[k].attrName];
+                            int type = temp->getType();
+                            if(type == INTE){
+                                cout << "select " << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
+                            }
+                            else if(type == STRING){
+                                int len = temp->length;
+                                char c[len];
+                                strncpy(c, bb+off, len);
+                                cout << "select " << attrs[k].attrName << ": " << c << endl;
+                            }
                         }
                     }
                 }
