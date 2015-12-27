@@ -235,7 +235,7 @@ public:
         // get number of free slots
         int* tempB = (int*) (bb+freeNumPos);
         int freeNum = tempB[0];
-        cout<<"freeNum = "<<freeNum<<endl;
+        // cout<<"freeNum = "<<freeNum<<endl;
         int emptyRid = 0;
         num = -1;
         for (int i = 0; i < slotNum; i++) {
@@ -266,8 +266,8 @@ public:
                 break;
             }
         }
-        cout<<"emptyPage = "<<emptyPage<<endl;
-        cout<<"emptyRid = "<<emptyRid<<endl;
+        // cout<<"emptyPage = "<<emptyPage<<endl;
+        // cout<<"emptyRid = "<<emptyRid<<endl;
         // writeItem
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
@@ -381,6 +381,7 @@ public:
                         BufType b = bpm->getPage(_fileID, i, index);
                         char* bb = (char*)b;
                         bb += j*length;
+                        cout<<"+----------------------------------------------+\n";
                         for(int k = 0; k < attrs.size(); k++){
                             if(attrs[k].attrName == "*"){
                                 for(int m = 0; m < sequence.size(); m++){
@@ -389,13 +390,13 @@ public:
                                     int off = offset[sequence[m]];
                                     int type = temp->getType();
                                     if(type == INTE){
-                                        cout << "select " << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                                        cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
                                     }
                                     else if(type == STRING){
                                         int len = temp->length;
                                         char c[len];
                                         strncpy(c, bb+off, len);
-                                        cout << "select " << sequence[m] << ": " << c << endl;
+                                        cout << sequence[m] << ": " << c << endl;
                                     }
                                 }
                                 break;
@@ -405,13 +406,13 @@ public:
                             int off = offset[attrs[k].attrName];
                             int type = temp->getType();
                             if(type == INTE){
-                                cout << "select " << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
+                                cout << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
                             }
                             else if(type == STRING){
                                 int len = temp->length;
                                 char c[len];
                                 strncpy(c, bb+off, len);
-                                cout << "select " << attrs[k].attrName << ": " << c << endl;
+                                cout << attrs[k].attrName << ": " << c << endl;
                             }
                         }
                     }
@@ -434,8 +435,16 @@ public:
     }
 
     void update(vector<CondItem> set, CondSql cond) {
+        cout<<"++++++++++++++++\n";
         for(int i = 0; i < pageNum; i++){
+            cout<<"+++\n";
             for(int j = 0; j < slotNum; j++){
+                cout<<"---\n";
+                cout<<"slotNum = "<<slotNum<<endl;
+                bool zzz;
+                conform(cond, i, j);
+                zzz = conform(cond, i, j);
+                cout<<"zzz = "<<zzz<<endl;
                 if(conform(cond, i, j)){
                     Attr* waitUpdate = new Attr();
                     int index;
@@ -530,6 +539,7 @@ public:
                 test->addAttr(*temp, itemName);
             }
         }
+
         bool ret = 1;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
@@ -715,6 +725,7 @@ public:
                 else{ret = 0;cout << "Condition Fault" << endl;}
             }
         }
+        cout<<"conform end, return "<<ret<<endl;
         return ret;
     }
 };

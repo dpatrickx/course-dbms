@@ -32,7 +32,6 @@ public:
 		    *(bbb) = value;
 		}
 		else if(type == STRING){
-			cout << str << endl << endl;
 			char* bb = (char*) b;
 		    bb += pos;
 		    for (int i = 0;i < str.size();i++) {
