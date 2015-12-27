@@ -278,7 +278,8 @@ valueitems:
     };
 valueitem:
     INTEGER {$$ = $1;}
-    | VALUEIT {$$ = $1;};
+    | VALUEIT {$$ = $1;}
+    | NULLL {$$ = $1;};
 
 selectsql:
     SELECT attrsql FROM tables WHERE condsql ';' {

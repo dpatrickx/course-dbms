@@ -50071,4 +50071,3 @@ INSERT INTO book VALUES
  (249998,'Braid: Poems (Florida Poetry Series)','W. Scott Olsen',102883,7081,2261),
  (249999,'Falling For You (First Love, No 215)','Tena Carlyle',104386,3283,1436),
  (250000,'A Cherished Reward (Homespun Series)','Anthony Boucher',100339,7366,2711);
-

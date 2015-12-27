@@ -165,6 +165,10 @@ public:
         bpm->markDirty(index);
     }
 
+    ~Table() {
+        bpm->close();
+    }
+
     // describe talbe
     void desc() {
         cout<<"+-------------+-------------+------+-----+\n";
@@ -227,21 +231,14 @@ public:
             if (i%8 == 0)
                 num++;
             char temp = bb[num];
-            int tempInt = (int)temp;
-            if (tempInt == -1) {
-                i += 7;
-                continue;
-            }
             if (((temp>>(7-(i%8)))&1) == 0) {
                 emptyPage = i+1;
                 break;
             }
-
         }
         if (emptyPage == -1) {
             // add pages
-            cout<<"add pages\n";
-            for (int i = 0; i < pageNum; i++) {
+            for (int i = 1; i <= pageNum; i++) {
                 b = bpm->allocPage(_fileID, pageNum+i, index, false);
                 // set array b to 0, b[2048]
                 memset(b, 0, 2048*sizeof(uint));
@@ -261,7 +258,6 @@ public:
             }
             // add pages
             emptyPage = pageNum+1;
-            cout<<"emptyPage = "<<emptyPage<<endl;
             pageNum += pageNum;
             b[0] = pageNum;
         }
@@ -272,10 +268,8 @@ public:
         // get number of free slots
         int* tempB = (int*) (bb+freeNumPos);
         int freeNum = tempB[0];
-        cout<<"freeNum = "<<freeNum<<endl;
         int emptyRid = 0;
         num = -1;
-        cout<<"emptyPage = "<<emptyPage<<endl;
         for (int i = 0; i < slotNum; i++) {
             if (i%8 == 0)
                 num++;
@@ -304,7 +298,6 @@ public:
                 break;
             }
         }
-        cout<<"emptyRid = "<<emptyRid<<endl;
         // writeItem
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
@@ -513,7 +506,7 @@ public:
     }
 
     void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond){
-        for(int i = 0; i < pageNum; i++){
+        for(int i = 1; i <= pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
             char* bbt = (char*) bt;
@@ -571,7 +564,7 @@ public:
     }
 
     void deleteItems(CondSql cond){
-        for(int i = 0; i < pageNum; i++) {
+        for(int i = 1; i <= pageNum; i++) {
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
             char* bbt = (char*) bt;
@@ -593,7 +586,7 @@ public:
     }
 
     void update(vector<CondItem> set, CondSql cond) {
-        for(int i = 0; i < pageNum; i++){
+        for(int i = 1; i <= pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
             char* bbt = (char*) bt;
