@@ -33,6 +33,7 @@ private:
     FileManager* fm;
     map<string, int> offset;
     string priKey;
+    vector<string> sequence;
 
     // 1. write every Type
     // 2. write NullBitMap
@@ -104,7 +105,7 @@ public:
         length = len;
         nullPos = len;
         length += (c.name.size()/8+1);
-        for (int i = c.name.size()-1; i >= 0; i--) {
+        for (int i = 0; i < c.name.size(); i++) {
             string tempType = c.type[i];
             if (tempType == "int") {
                 len -= 4;
@@ -121,6 +122,7 @@ public:
                 ex.attributes.insert(pair<string, Type>(c.name[i], type));
             }
             offset.insert(pair<string, int>(c.name[i], len));
+            sequence.push_back(c.name[i]);
         }
         example = ex;
         // set typeNum
@@ -381,19 +383,19 @@ public:
                         bb += j*length;
                         for(int k = 0; k < attrs.size(); k++){
                             if(attrs[k].attrName == "*"){
-                                for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+                                for(int m = 0; m < sequence.size(); m++){
                                     Type* temp = new Type();
-                                    temp = example.getAttr(it->first);
-                                    int off = it->second;
+                                    temp = example.getAttr(sequence[m]);
+                                    int off = offset[sequence[m]];
                                     int type = temp->getType();
                                     if(type == INTE){
-                                        cout << "select " << it->first << ": " << *((uint*)(bb+off)) << endl;
+                                        cout << "select " << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
                                     }
                                     else if(type == STRING){
                                         int len = temp->length;
                                         char c[len];
                                         strncpy(c, bb+off, len);
-                                        cout << "select " << it->first << ": " << c << endl;
+                                        cout << "select " << sequence[m] << ": " << c << endl;
                                     }
                                 }
                                 break;
