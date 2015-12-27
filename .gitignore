@@ -6,6 +6,3 @@ yacc/test.sql
 main
 *.exe
 *.o
-yacc/*.tab.h
-yacc/*.tab.c
-yacc/*.yy.c
