@@ -21,9 +21,9 @@ valueitem   ({yin}({other_operator}|{nondigit}|{digit})*+{yin})
 blank_chars ([ \f\r\t\v]+)
 comment     ("--"[^\r\n]*{newline})
 SIMPLE_OPERATOR     ("+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":")
-other_operator      (" "|"+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"&"|"$"|"@"|"#")
+other_operator      (" "|"+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"&"|"$"|"@"|"#"|"<"|">"|"|"|"\\"|"\""|"="|"`"|"~"|"^"|"_")
 EXPRESSION  ([{SIMPLE_OPERATOR}A-Za-z]+)
-yin         ("\'"|"\"")
+yin         ("\'")
 %%
 ">"                                 {   yylval.m_sId = ">";         return JUDGEOP;     }
 "<"                                 {   yylval.m_sId = "<";         return JUDGEOP;     }
