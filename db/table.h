@@ -295,9 +295,9 @@ public:
                     BufType c = bpm->getPage(_fileID, 0, index);
                     char* cc = (char*)(c+1);
                     bpm->markDirty(index);
-                    emptyPage--;
-                    int pagePos = emptyPage/8;
-                    int tempt = emptyPage%8;
+                    int eee = emptyPage - 1;
+                    int pagePos = eee/8;
+                    int tempt = eee%8;
                     cc[pagePos] |= (1<<(7-tempt));
                 }
                 break;
@@ -349,7 +349,6 @@ public:
                 //map<string, int>::iterator it = offset.begin();
                 for(int j = 0; j < value[i].size(); j++){
                     string itemName = sequence[j];
-                    cout << sequence[j] << "+++++++" << offset[sequence[j]] << endl;
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
@@ -422,6 +421,8 @@ public:
                         cout<<"+------------------------------+\n";
                         for(int k = 0; k < attrs.size(); k++){
                             if(attrs[k].attrName == "*"){
+                                cout << "page: " << i << endl;
+                                cout << "rID: " << j << endl; 
                                 for(int m = 0; m < sequence.size(); m++){
                                     Type* temp = new Type();
                                     temp = example.getAttr(sequence[m]);

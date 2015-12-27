@@ -21,7 +21,7 @@ valueitem   ({yin}({other_operator}|{nondigit}|{digit})*+{yin})
 blank_chars ([ \f\r\t\v]+)
 comment     ("--"[^\r\n]*{newline})
 SIMPLE_OPERATOR     ("+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":")
-other_operator      (" "|"("|")"|","|"."|":"|"-")
+other_operator      (" "|"+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"&"|"$"|"@"|"#")
 EXPRESSION  ([{SIMPLE_OPERATOR}A-Za-z]+)
 yin         ("\'"|"\"")
 %%

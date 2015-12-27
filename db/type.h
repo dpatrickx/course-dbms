@@ -34,11 +34,11 @@ public:
 		else if(type == STRING){
 			char* bb = (char*) b;
 		    bb += pos;
-		    for (int i = 0;i < str.size();i++) {
-		        *(bb+i) = str[i];
+		    for (int i = 1;i < str.size()-1;i++) {
+		        *(bb+i-1) = str[i];
 		    }
 		    if(str.size() < length){
-		    	*(bb+str.size()) = '\0';
+		    	*(bb+str.size()-2) = '\0';
 		    }
 		}
 		else if(type == NUL){}
