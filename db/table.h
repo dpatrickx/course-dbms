@@ -151,6 +151,10 @@ public:
             bbb[0] = slotNum;
         }
         b[0] = 32;
+        int numRank = 0;
+        for (int i = 0; i < pageNum; i++) {
+
+        }
         b[1] = 0;   // 32 pages
         bpm->markDirty(index);
     }
@@ -211,7 +215,7 @@ public:
         // allocate 32 pages at each time, so the pageNum must be 32n
         int num = -1;
         int oldNum = 0;
-        int emptyPage = 1;
+        int emptyPage = -1;
         // emptyPageTH page is available
         for (int i = 0; i < pageNum; i++) {
             if (i%8 == 0)
@@ -228,6 +232,20 @@ public:
             }
 
         }
+        if (emptyPage == -1) {
+            // add pages
+            for (int i = 0; i < pageNum; i++) {
+                b = bpm->allocPage(_fileID, i, index, false);
+                // set array b to 0, b[2048]
+                memset(b, 0, 2048*sizeof(uint));
+                bb = (char*)b;
+                int* bbb = (int*) (bb+freeNumPos);
+                bbb[0] = slotNum;
+            }
+            b = bpm->getPage(_fileID, 0, index);
+            pageNum += pageNum;
+            b[0] = pageNum;
+        }
         // find a available slot on the page's bitmap
         b = bpm->getPage(_fileID, emptyPage, index);
         bpm->markDirty(index);
@@ -235,7 +253,7 @@ public:
         // get number of free slots
         int* tempB = (int*) (bb+freeNumPos);
         int freeNum = tempB[0];
-        cout<<"freeNum = "<<freeNum<<endl;
+        // cout<<"freeNum = "<<freeNum<<endl;
         int emptyRid = 0;
         num = -1;
         for (int i = 0; i < slotNum; i++) {
@@ -266,8 +284,8 @@ public:
                 break;
             }
         }
-        cout<<"emptyPage = "<<emptyPage<<endl;
-        cout<<"emptyRid = "<<emptyRid<<endl;
+        // cout<<"emptyPage = "<<emptyPage<<endl;
+        // cout<<"emptyRid = "<<emptyRid<<endl;
         // writeItem
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
@@ -279,12 +297,13 @@ public:
         // only put the slot bit to be 0
         int index;
         BufType b = bpm->getPage(_fileID, pageID, index);
+        char* bb = (char*)b;
         bpm->markDirty(index);
 
-        int pos = slotNum*length;
-        pos += (rID/32);
-        pos %= 32;
-        b[pos] &= (~(1<<(31-pos)));
+        int pos = freeMapPos;
+        pos += (rID/8);
+        rID %= 8;
+        bb[pos] &= (~(1<<(7-rID)));
     }
 
     // update Item:
@@ -381,6 +400,7 @@ public:
                         BufType b = bpm->getPage(_fileID, i, index);
                         char* bb = (char*)b;
                         bb += j*length;
+                        cout<<"+------------------------------+\n";
                         for(int k = 0; k < attrs.size(); k++){
                             if(attrs[k].attrName == "*"){
                                 for(int m = 0; m < sequence.size(); m++){
@@ -389,13 +409,13 @@ public:
                                     int off = offset[sequence[m]];
                                     int type = temp->getType();
                                     if(type == INTE){
-                                        cout << "select " << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                                        cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
                                     }
                                     else if(type == STRING){
                                         int len = temp->length;
                                         char c[len];
                                         strncpy(c, bb+off, len);
-                                        cout << "select " << sequence[m] << ": " << c << endl;
+                                        cout << sequence[m] << ": " << c << endl;
                                     }
                                 }
                                 break;
@@ -405,13 +425,13 @@ public:
                             int off = offset[attrs[k].attrName];
                             int type = temp->getType();
                             if(type == INTE){
-                                cout << "select " << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
+                                cout << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
                             }
                             else if(type == STRING){
                                 int len = temp->length;
                                 char c[len];
                                 strncpy(c, bb+off, len);
-                                cout << "select " << attrs[k].attrName << ": " << c << endl;
+                                cout << attrs[k].attrName << ": " << c << endl;
                             }
                         }
                     }
@@ -421,13 +441,22 @@ public:
     }
 
     void deleteItems(CondSql cond){
-        for(int i = 0; i < pageNum; i++){
-            for(int j = 0; j < slotNum; j++){
-                if(conform(cond, i, j)){
-                    int index;
-                    BufType b = bpm->getPage(_fileID, i, index);
-                    bpm->markDirty(index);
-                    removeItem(i, j);
+        for(int i = 0; i < pageNum; i++) {
+            int index;
+            BufType bt = bpm->getPage(_fileID, i, index);
+            char* bbt = (char*) bt;
+            int j = 0;
+            for(j = 0; j < slotNum; j++) {
+                int pos = freeMapPos;
+                pos += (j/8);
+                int temp = j%8;
+                if (((bbt[pos]>>(7-temp))&1)) {
+                    if(conform(cond, i, j)){
+                        int index;
+                        BufType b = bpm->getPage(_fileID, i, index);
+                        bpm->markDirty(index);
+                        removeItem(i, j);
+                    }
                 }
             }
         }
@@ -439,7 +468,7 @@ public:
             BufType bt = bpm->getPage(_fileID, i, index);
             char* bbt = (char*) bt;
             int j = 0;
-            for(int j = 0; j < slotNum; j++){
+            for(j = 0; j < slotNum; j++){
                 int pos = freeMapPos;
                 pos += (j/8);
                 int temp = j%8;
@@ -540,7 +569,6 @@ public:
             }
         }
         bool ret = 1;
-        cout << __LINE__ << endl;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
             if(item.judgeOp == "="){
@@ -550,7 +578,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             ((Integer*)test->getAttr(item.attr2.attrName))->value){
                             ret = 0;
-                            cout << "A" <<endl;
+                            // cout << "A" <<endl;
                             break;
                         }
                     }
@@ -558,7 +586,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
-                            cout << "B" <<endl;
+                            // cout << "B" <<endl;
                             break;
                         } 
                     }
@@ -579,7 +607,7 @@ public:
                         if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             a2){
                             ret = 0;
-                            cout << "C" <<endl;
+                            // cout << "C" <<endl;
                             break;
                         } 
                     }
@@ -589,7 +617,7 @@ public:
                         if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
                             ((Varchar*)test->getAttr(item.attr2.attrName))->str){
                             ret = 0;
-                            cout << "D" <<endl;
+                            // cout << "D" <<endl;
                             break;
                         }
                     }
@@ -597,7 +625,7 @@ public:
                         string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
                         if(compare != item.expression.str){
                             ret = 0;
-                            cout << "E" <<endl;
+                            // cout << "E" <<endl;
                             break;
                         }
                     }
@@ -611,7 +639,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            cout << "F" <<endl;
+                            // cout << "F" <<endl;
                                 break;
                             }
                         }
@@ -619,7 +647,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            cout << "G" <<endl;
+                            // cout << "G" <<endl;
                                 break;
                             }
                         }
@@ -627,7 +655,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            cout << "H" <<endl;
+                            // cout << "H" <<endl;
                                 break;
                             }
                         }
@@ -635,7 +663,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 ((Integer*)test->getAttr(item.attr2.attrName))->value){
                                 ret = 0;
-                            cout << "I" <<endl;
+                            // cout << "I" <<endl;
                                 break;
                             }
                         }
@@ -645,7 +673,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >= 
                                 item.expression.value){
                                 ret = 0;
-                            cout << "J" <<endl;
+                            // cout << "J" <<endl;
                                 break;
                             }
                         }
@@ -653,7 +681,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value > 
                                 item.expression.value){
                                 ret = 0;
-                            cout << "K" <<endl;
+                            // cout << "K" <<endl;
                                 break;
                             }
                         }
@@ -661,7 +689,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value < 
                                 item.expression.value){
                                 ret = 0;
-                            cout << "L" <<endl;
+                            // cout << "L" <<endl;
                                 break;
                             }
                         }
@@ -669,7 +697,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <= 
                                 item.expression.value){
                                 ret = 0;
-                            cout << "M" <<endl;
+                            // cout << "M" <<endl;
                                 break;
                             }
                         }
@@ -692,7 +720,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >=
                                 a2){
                                 ret = 0;
-                            cout << "N" <<endl;
+                            // cout << "N" <<endl;
                                 break;
                             }
                         }
@@ -700,7 +728,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value >
                                 a2){
                                 ret = 0;
-                            cout << "O" <<endl;
+                            // cout << "O" <<endl;
                                 break;
                             }
                         }
@@ -708,7 +736,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <
                                 a2){
                                 ret = 0;
-                            cout << "P" <<endl;
+                            // cout << "P" <<endl;
                                 break;
                             }
                         }
@@ -716,7 +744,7 @@ public:
                             if(((Integer*)test->getAttr(item.attr1.attrName))->value <=
                                 a2){
                                 ret = 0;
-                            cout << "Q" <<endl;
+                            // cout << "Q" <<endl;
                                 break;
                             }
                         }

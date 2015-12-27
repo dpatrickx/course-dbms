@@ -230,8 +230,9 @@ public:
         tableName = tab;
     }
     void display() {
-        cout<<"-------------------\n";
+        cout<<"\n==============================\n";
         cout<<"SQL:  insert into table: "<<tableName<<endl;
+        cout<<"==============================\n";
         // cout<<"item size is "<<tableitems.size()<<endl;
         // for (int i = 0;i < tableitems.size();i++) {
         //     cout<<tableitems[i]<<endl;
@@ -345,13 +346,16 @@ public:
     }
 
     void display() {
-        cout<<"-------------------\n";
-        cout<<"update table "<<tableName<<endl;
+        cout<<"\n==============================\n";
+        cout<<"SQL: update table "<<tableName<<endl;
         cout<<"set\n";
-        for (int i = 0;i < set.size();i++)
+        for (int i = 0;i < set.size();i++) {
             set[i].display();
+            cout<<' ';
+        }
         cout<<"where\n";
         cond.display();
+        cout<<"==============================\n";
     }
 };
 #endif

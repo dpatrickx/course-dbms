@@ -171,8 +171,6 @@ public:
             }
             expression.display();
         }
-
-        cout<<endl;
     }
 };
 // (tb1.attr1 judeop tb2.attr2) or/and/not ...

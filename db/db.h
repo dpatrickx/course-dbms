@@ -87,8 +87,7 @@ public:
             return;
         }
         Table* tb = getTable(name);
-        cout<<"deleteTB()\n";
-        // tb->deleteItems(cond);
+        tb->deleteItems(cond);
     }
 
     void update(string name, vector<CondItem> set, CondSql cond) {
@@ -97,7 +96,6 @@ public:
             return;
         }
         Table* tb = getTable(name);
-        cout<<"update()\n";
         tb->update(set, cond);
     }
 };

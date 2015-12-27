@@ -23,6 +23,8 @@ INSERT INTO book(id, title, authors, pulisher_id, copies, pages) VALUES
 update book set title = 'hello' where id < 200003;
 update book set title = 'world' where id = 200005;
 
+delete from book where id = 200004;
+
 select * from book;
 
 desc table book;
