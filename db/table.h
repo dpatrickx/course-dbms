@@ -34,6 +34,7 @@ private:
     map<string, int> offset;
     string priKey;
     vector<string> sequence;
+    map<string, vector<string> > check;
 
     // 1. write every Type
     // 2. write NullBitMap
@@ -86,6 +87,11 @@ public:
         fm->openFile((root+"/"+n+".txt").c_str(), _fileID);
         // set bmp
         bpm = new BufPageManager(fm);
+        //set check
+        for(int i = 0; i < c.checkAttrs.size(); i++){
+            check.insert(pair<string, vector<string> >(c.checkAttrs[i], c.checkVal[i]));
+            cout << "check: " << c.checkAttrs[i] << endl;
+        }
         // set example, offset
         Attr ex;
         ex.tableName = n;
@@ -338,12 +344,30 @@ public:
 
     void insert(vector<string> items, vector<vector<string> > value){
         if(items.size() == 0){
-            for(int i = 0; i < value.size(); i++){
+            for(int i = 0; i < value.size(); i++){//every item
                 Attr* writeItems = new Attr();
                 //map<string, int>::iterator it = offset.begin();
-                bool conti = 0;
-                for(int j = 0; j < value[i].size(); j++){
+                bool conti = 1;
+                for(int j = 0; j < value[i].size(); j++){//every type
+                    conti = 1;
                     string itemName = sequence[j];
+                    map<string, vector<string> >::iterator c_it;
+                    c_it = check.find(itemName);
+                    if(c_it == check.end()){
+                        conti = 0;
+                    }
+                    else{
+                        for(int ss = 0; ss < c_it->second.size(); ss++){
+                            if(value[i][j] == c_it->second[ss]){
+                                conti = 0;
+                                break;
+                            }
+                        }
+                    }
+                    if(conti){
+                        cout << "Check error" << endl;
+                        break;
+                    }
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
@@ -423,6 +447,25 @@ public:
                     bool exist = 0;
                     for(int j = 0; j < items.size(); j++){
                         if(items[j] == itemName){
+                            conti = 1;
+                            map<string, vector<string> >::iterator c_it;
+                            c_it = check.find(itemName);
+                            if(c_it == check.end()){
+                                conti = 0;
+                            }
+                            else{
+                                for(int ss = 0; ss < c_it->second.size(); ss++){
+                                    if(value[i][j] == c_it->second[ss]){
+                                        conti = 0;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(conti){
+                                cout << "Check error" << endl;
+                                break;
+                            }
+                            
                             Type* exam = new Type();
                             exam = example.getAttr(itemName);
                             int type = exam->getType();
@@ -524,8 +567,6 @@ public:
                         cout<<"+------------------------------+\n";
                         for(int k = 0; k < attrs.size(); k++){
                             if(attrs[k].attrName == "*"){
-                                cout << "page: " << i << endl;
-                                cout << "rID: " << j << endl; 
                                 for(int m = 0; m < sequence.size(); m++){
                                     Type* temp = new Type();
                                     temp = example.getAttr(sequence[m]);
