@@ -435,79 +435,70 @@ public:
 
     void update(vector<CondItem> set, CondSql cond) {
         for(int i = 0; i < pageNum; i++){
-            int index;
-            BufType bt = bpm->getPage(_fileID, i, index);
-            char* bbt = (char*) bt;
-            int j = 0;
             for(int j = 0; j < slotNum; j++){
-                int pos = freeMapPos;
-                pos += (j/8);
-                int temp = j%8;
-                if (((bbt[pos]>>(7-temp))&1)){
-                    if(conform(cond, i, j)){
-                        Attr* waitUpdate = new Attr();
-                        int index;
-                        BufType b = bpm->getPage(_fileID, i, index);
-                        bpm->markDirty(index);
-                        char* bb = (char*)b + j*length;
-                        for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
-                            string itemName = it->first;
-                            Type* temp = new Type();
-                            temp = example.getAttr(itemName);
-                            int type = temp->getType();
+                if(conform(cond, i, j)){
+                    Attr* waitUpdate = new Attr();
+                    int index;
+                    BufType b = bpm->getPage(_fileID, i, index);
+                    bpm->markDirty(index);
+                    char* bb = (char*)b + j*length;
+                    for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+                        string itemName = it->first;
+                        Type* temp = new Type();
+                        temp = example.getAttr(itemName);
+                        int type = temp->getType();
+                        if(type == INTE){
+                            int val = *((uint*)(bb + offset[itemName]));
+                            ((Integer*)temp)->value = val;
+                            waitUpdate->addAttr(*temp, itemName);
+                        }
+                        else if(type == STRING){
+                            char v[100];
+                            strncpy(v, bb + offset[itemName], temp->length);
+                            string val(v);
+                            ((Varchar*)temp)->str = val;
+                            waitUpdate->addAttr(*temp, itemName);
+                        }
+                    }
+                    for(int k = 0; k < set.size(); k++){
+                        Type* temp = new Type();
+                        temp = example.getAttr(set[k].attr1.attrName);
+                        int type = temp->getType();
+                        if(set[k].attr2.isNull()){
                             if(type == INTE){
-                                int val = *((uint*)(bb + offset[itemName]));
-                                ((Integer*)temp)->value = val;
-                                waitUpdate->addAttr(*temp, itemName);
+                                ((Integer*)temp)->value = set[k].expression.value;
                             }
                             else if(type == STRING){
-                                char v[100];
-                                strncpy(v, bb + offset[itemName], temp->length);
-                                string val(v);
-                                ((Varchar*)temp)->str = val;
-                                waitUpdate->addAttr(*temp, itemName);
+                                ((Varchar*)temp)->str = set[k].expression.str;
                             }
                         }
-                        for(int k = 0; k < set.size(); k++){
-                            Type* temp = new Type();
-                            temp = example.getAttr(set[k].attr1.attrName);
-                            int type = temp->getType();
-                            if(set[k].attr2.isNull()){
-                                if(type == INTE){
-                                    ((Integer*)temp)->value = set[k].expression.value;
-                                }
-                                else if(type == STRING){
-                                    ((Varchar*)temp)->str = set[k].expression.str;
-                                }
+                        else if(set[k].expression.isNull()){
+                            if(type == INTE){
+                                ((Integer*)temp)->value = ((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
                             }
-                            else if(set[k].expression.isNull()){
-                                if(type == INTE){
-                                    ((Integer*)temp)->value = ((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
-                                }
-                                else if(type == STRING){
-                                    ((Varchar*)temp)->str = ((Varchar*)(waitUpdate->getAttr(set[k].attr2.attrName)))->str;
-                                }
+                            else if(type == STRING){
+                                ((Varchar*)temp)->str = ((Varchar*)(waitUpdate->getAttr(set[k].attr2.attrName)))->str;
                             }
-                            else{
-                                int a2 = ((Integer*)waitUpdate->getAttr(set[k].attr2.attrName))->value;
-                                if(set[k].expression.ops[0] == "+"){
-                                    a2 += atoi(set[k].expression.numbers[0].c_str());
-                                }
-                                else if(set[k].expression.ops[0] == "-"){
-                                    a2 -= atoi(set[k].expression.numbers[0].c_str());
-                                }
-                                else if(set[k].expression.ops[0] == "*"){
-                                    a2 *= atoi(set[k].expression.numbers[0].c_str());
-                                }
-                                else if(set[k].expression.ops[0] == "/"){
-                                    a2 /= atoi(set[k].expression.numbers[0].c_str());
-                                }
-                                ((Integer*)temp)->value = a2;
-                            }
-                            waitUpdate->attributes[set[k].attr1.attrName] = *temp;
                         }
-                        updateItem(i, j, *waitUpdate);
+                        else{
+                            int a2 = ((Integer*)waitUpdate->getAttr(set[k].attr2.attrName))->value;
+                            if(set[k].expression.ops[0] == "+"){
+                                a2 += atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "-"){
+                                a2 -= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "*"){
+                                a2 *= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            else if(set[k].expression.ops[0] == "/"){
+                                a2 /= atoi(set[k].expression.numbers[0].c_str());
+                            }
+                            ((Integer*)temp)->value = a2;
+                        }
+                        waitUpdate->attributes[set[k].attr1.attrName] = *temp;
                     }
+                    updateItem(i, j, *waitUpdate);
                 }
             }
         }

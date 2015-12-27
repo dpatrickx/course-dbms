@@ -125,6 +125,10 @@ public:
     }
 
     void display() {
+        if (attrName == "*") {
+            cout<<"*";
+            return;
+        }
         if (tableName!="")
             cout<<tableName<<'.'<<attrName;
         else

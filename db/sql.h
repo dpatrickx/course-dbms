@@ -232,17 +232,17 @@ public:
     void display() {
         cout<<"-------------------\n";
         cout<<"SQL:  insert into table: "<<tableName<<endl;
-        cout<<"item size is "<<tableitems.size()<<endl;
-        for (int i = 0;i < tableitems.size();i++) {
-            cout<<tableitems[i]<<endl;
-        }
-        cout<<"value size is "<<valueSqls.size()<<endl;
-        for (int i = 0;i < valueSqls.size();i++) {
-            for (int j = 0;j < valueSqls[i].size();j++)
-                cout<<valueSqls[i][j]<<' ';
-            cout<<endl;
-        }
-        cout<<"-------------------\n";
+        // cout<<"item size is "<<tableitems.size()<<endl;
+        // for (int i = 0;i < tableitems.size();i++) {
+        //     cout<<tableitems[i]<<endl;
+        // }
+        // cout<<"value size is "<<valueSqls.size()<<endl;
+        // for (int i = 0;i < valueSqls.size();i++) {
+        //     for (int j = 0;j < valueSqls[i].size();j++)
+        //         cout<<valueSqls[i][j]<<' ';
+        //     cout<<endl;
+        // }
+        // cout<<"-------------------\n";
     }
 
 };
@@ -276,19 +276,16 @@ public:
     }
 
     void display() {
-        cout<<"-------------------\n";
-        cout<<"attr size is "<<attrs.size()<<endl;
+        cout<<"\n-------------------\n";
+        cout<<"SQL:  select ";
         for (int i = 0; i < attrs.size(); i++) {
-            cout<<i<<": ";
             attrs[i].display();
-            cout<<endl;
+            cout<<' ';
         }
-        cout<<"from\n";
+        cout<<"from ";
         for (int i = 0; i < tables.size(); i++)
             cout<<tables[i]<<' ';
         cout<<endl;
-        cout<<"where\n";
-        cond.display();
     }
 };
 

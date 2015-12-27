@@ -20,6 +20,9 @@ INSERT INTO book(id, title, authors, pulisher_id, copies, pages) VALUES
  (200005,'Meine Juden--eure Juden','E. J. W. Barber',103089,206,2771),
  (200006,'You Can Draw a Kangaroo','Amy Tan',101850,5296,2092);
 
-select id, title, authors, copies from book;
+update book set title = 'hello' where id < 200003;
+update book set title = 'world' where id = 200005;
+
+select * from book;
 
 desc table book;

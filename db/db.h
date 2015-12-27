@@ -59,18 +59,15 @@ public:
     }
 
     void insertTB(string name, vector<string> t, vector<vector<string> > v) {
-        cout<<"--"<<name<<"--\n";
         if (tbMap.count(name) == 0) {
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
             return;
         }
         Table* tb = getTable(name);
-        cout<<"insertTB()\n";
         tb->insert(t, v);
     }
 
     void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
-        cout<<"selectTB()\n";
         Table* tb = getTable(t[0]);
         tb->select(attrs, cond);
     }
@@ -101,7 +98,7 @@ public:
         }
         Table* tb = getTable(name);
         cout<<"update()\n";
-        // tb->update(set, cond);
+        tb->update(set, cond);
     }
 };
 
