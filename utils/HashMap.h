@@ -34,6 +34,24 @@ public:
 			tail = n;
 		}
 	}
+	void remove(string v) {
+		HashNode* node = head;
+		HashNode* befo = 0;
+		while(node != 0) {
+			if (node->val == v) {
+				if (befo != 0) {
+					befo->next = node->next;
+					if (node == tail)
+						tail = befo;
+				} else
+					head = node->next;
+				delete node;
+				break;
+			}
+			befo = node;
+			node = node->next;
+		}
+	}
 	bool check(string v) {
 		bool res = false;
 		HashNode* node = head;
@@ -73,6 +91,17 @@ public:
 		rank %= SIZE;
 		HashNode* node = new HashNode(v);
 		dict[rank].add(node);
+	}
+	void remove(string v) {
+		int rank = 0;
+		for (int i = 0; i < v.size(); i++) {
+			int dist = v[i] - '0';
+			if (dist < 0)
+				dist = -dist;
+			rank += 13*(i+1)*dist;
+		}
+		rank %= SIZE;
+		dict[rank].remove(v);
 	}
 };
 
