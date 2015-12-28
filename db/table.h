@@ -694,21 +694,21 @@ public:
         }
     }
 
-    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond, vector<string> op, vector<string> attrID){
+    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond, vector<string> op, vector<string> attrID, string groupName){
         if(op.size() != 0){
             cout<<"+------------------------------+\n";
             for(int i = 0; i < op.size(); i++){
                 if(op[i] == "sum"){
-                    operation(1, attrID[i], cond, "bjs");
+                    operation(1, attrID[i], cond, groupName);
                 }
                 else if(op[i] == "max"){
-                    operation(3, attrID[i], cond, "bjs");
+                    operation(3, attrID[i], cond, groupName);
                 }
                 else if(op[i] == "avg"){
-                    operation(2, attrID[i], cond, "bjs");
+                    operation(2, attrID[i], cond, groupName);
                 }
                 else if(op[i] == "min"){
-                    operation(4, attrID[i], cond, "bjs");
+                    operation(4, attrID[i], cond, groupName);
                 }
             }
             return;
@@ -1162,6 +1162,7 @@ public:
                                 ret = 0;
                                 break;
                             }
+                            found += retu[0].size();
                             for(int p = 1; p < total; p++){
                                 int tt = compare.find(retu[p], found);
                                 if(tt == string::npos){

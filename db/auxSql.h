@@ -232,4 +232,10 @@ public:
     }
 };
 
+class OPS {
+public:
+    vector<string> ops;
+    vector<string> names;
+};
+
 #endif

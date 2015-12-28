@@ -66,6 +66,12 @@ yin         ("\'")
 "DESC"|"desc"                       {   yylval.m_sId = "desc";      return DESC;        }
 "CHECK"|"check"                     {   yylval.m_sId = "check";     return CHECK;       }
 "IN"|"in"                           {   yylval.m_sId = "in";        return IN;          }
+"SUM"|"sum"                         {   yylval.m_sId = "sum";       return GROUPOP;         }
+"AVG"|"avg"                         {   yylval.m_sId = "avg";       return GROUPOP;         }
+"MAX"|"max"                         {   yylval.m_sId = "max";       return GROUPOP;         }
+"MIN"|"min"                         {   yylval.m_sId = "min";       return GROUPOP;         }
+"GROUP"|"group"                     {   yylval.m_sId = "group";     return GROUP;       }
+"BY"|"by"                           {   yylval.m_sId = "by";        return BY;          }
 {yin}           {
             yylval.m_sId = yytext;
             return YIN;

@@ -67,9 +67,9 @@ public:
         tb->insert(t, v);
     }
 
-    void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
+    void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
         Table* tb = getTable(t[0]);
-        tb->select(attrs, cond);
+        tb->select(attrs, cond, opVec, attrId, gName);
     }
 
     void descTB(string name) {

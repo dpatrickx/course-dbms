@@ -137,12 +137,12 @@ public:
         currDb->insertTB(name, t, v);
     }
 
-    void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
+    void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->selectTB(attrs, t, cond);
+        currDb->selectTB(attrs, t, cond, opVec, attrId, gName);
     }
 
     void tbWork(string name, CondSql cond) {

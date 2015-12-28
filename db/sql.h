@@ -254,6 +254,9 @@ class SelectSql : public Sql {
 public:
     vector<AttrItem> attrs;
     vector<string> tables;
+    vector<string> opVec;
+    vector<string> attrID;
+    string groupName;
     CondSql cond;
 
     SelectSql() {
@@ -273,7 +276,7 @@ public:
 
     void work() {
         DBManager* manager = DBManager::instance("./");
-        manager->tbWork(attrs, tables, cond);
+        manager->tbWork(attrs, tables, cond, opVec, attrID, groupName);
     }
 
     void display() {
@@ -282,6 +285,9 @@ public:
         for (int i = 0; i < attrs.size(); i++) {
             attrs[i].display();
             cout<<' ';
+        }
+        for (int i = 0; i < opVec.size(); i++) {
+            cout<<opVec[i]<<"("<<attrID[i]<<"), ";
         }
         cout<<"from ";
         for (int i = 0; i < tables.size(); i++)
