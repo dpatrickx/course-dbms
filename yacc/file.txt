@@ -1,20 +1,27 @@
 create database test;
-show databases;
-use test;
+use database test;
 
-CREATE TABLE book (
-  id int(10) NOT NULL,
-  title varchar(100) NOT NULL,
-  authors varchar(200),
-  publisher_id int(10) NOT NULL,
-  copies int(10),
-  pages int(10),
-  PRIMARY KEY  (id)
+CREATE TABLE customer (
+id int(10) NOT NULL,
+name varchar(25),
+gender varchar(1) NOT NULL,
+check (gender in ('F','M')),
+PRIMARY KEY (id)
 );
 
-INSERT INTO book VALUES 
- (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
- (200002,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530);
+insert into customer values
+(1, 'name1', 'F'),
+(2, 'name2', 'M'),
+(3, '1name3', 'M'),
+(4, '1name', 'M');
 
- UPDATE book SET title='Nine Times Nine' WHERE authors=null;
- select * from book;
+SELECT MIN(id), max(id) FROM customer where id = 1;
+SELECT max(id) FROM customer;
+SELECT sum(id) FROM customer;
+SELECT avg(id) FROM customer group by id;
+
+select * from customer where name = '%name%';
+select * from customer where name = 'name%';
+select * from customer where name = '%name';
+
+desc table customer;

@@ -15,9 +15,6 @@
 
 class DBManager {
 private:
-    DB* getDB(string name) {
-        return dbMap[name];
-    }
     DBManager(string r) {
         root = r;
         if (root[root.size()-1] != '/')
@@ -26,6 +23,9 @@ private:
     }
 
 public:
+    DB* getDB(string name) {
+        return dbMap[name];
+    }
     static DBManager* _instance;
     static DBManager* instance(string r) {
         if (_instance == 0) {
@@ -38,6 +38,13 @@ public:
     string currDbName;
     string root;        // root/dbname
     DB* currDb;
+
+    void saveFile() {
+        for (int i = 0; i < dbName.size(); i++) {
+            DB* db = getDB(dbName[i]);
+            db->saveFile();
+        }
+    }
 
     void showDBs() {
         cout<<"+--------------------+\n";
@@ -137,12 +144,12 @@ public:
         currDb->insertTB(name, t, v);
     }
 
-    void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
+    void tbWork(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
         if (currDbName == "") {
             printf("ERROR 1046 (3D000): No database selected\n");
             return;
         }
-        currDb->selectTB(attrs, t, cond);
+        currDb->selectTB(attrs, t, cond, opVec, attrId, gName);
     }
 
     void tbWork(string name, CondSql cond) {

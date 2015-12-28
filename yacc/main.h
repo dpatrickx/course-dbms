@@ -42,6 +42,7 @@ struct YaccType
 
     UpdateSql m_upda;
     vector<CondItem> m_set;
+    OPS m_ops;
 
     Sql m_sql;
 };

@@ -12,7 +12,7 @@
 %}
 
 %token<m_sId>  INTEGER
-%token<m_sId>  DATABASE SHOW DATABASES TABLES CHECK IN
+%token<m_sId>  DATABASE SHOW DATABASES TABLES CHECK IN GROUPOP GROUP BY
 %token<m_sId>  IDENTIFIER INSERT INTO VALUES YIN VALUEIT
 %token<m_sId>  CREATE TABLE PRIMARY KEY TYPE NULLL IS
 %token<m_sId>  KIND IOKIND SELECT FROM WHERE EXPRESSION
@@ -23,6 +23,7 @@
 %token<m_sId>  ','  ';'  '!'  '('  ')'  '['  ']'  '{'  '}' '?'
 %token<m_cOp>  OPERATOR
 %type<m_sId>   sqllist
+%type<m_ops> ops
 %type<m_usedb>   usedbsql
 %type<m_dropdb>  dropdbsql
 %type<m_credb>   createdbsql
@@ -292,6 +293,51 @@ selectsql:
         $$.init($2, $4, cond);
         $$.display();
         $$.work();
+    }
+    | SELECT ops FROM tables ';' {
+        $$.opVec = $2.ops;
+        $$.tables = $4;
+        $$.attrID = $2.names;
+        $$.groupName = "";
+        $$.display();
+        $$.work();
+    }
+    | SELECT ops FROM tables WHERE condsql ';' {
+        $$.opVec = $2.ops;
+        $$.cond = $6;
+        $$.tables = $4;
+        $$.attrID = $2.names;
+        $$.groupName = "";
+        $$.display();
+        $$.work();
+    }
+    | SELECT ops FROM tables GROUP BY IDENTIFIER WHERE condsql ';' {
+        $$.cond = $9;
+        $$.tables = $4;
+        $$.opVec = $2.ops;
+        $$.attrID = $2.names;
+        $$.groupName = $7;
+        $$.display();
+        $$.work();
+    }
+    | SELECT ops FROM tables GROUP BY IDENTIFIER ';' {
+        $$.tables = $4;
+        $$.opVec = $2.ops;
+        $$.attrID = $2.names;
+        $$.groupName = $7;
+        $$.display();
+        $$.work();
+    };
+ops:
+    GROUPOP '(' IDENTIFIER ')' ',' ops {
+        $$.ops.push_back($1);
+        $$.names.push_back($3);
+        $$.ops.insert($$.ops.end(), $6.ops.begin(), $6.ops.end());
+        $$.names.insert($$.names.end(), $6.names.begin(), $6.names.end());
+    }
+    | GROUPOP '(' IDENTIFIER ')' {
+        $$.ops.push_back($1);
+        $$.names.push_back($3);
     };
 attrsql:
     '*' {

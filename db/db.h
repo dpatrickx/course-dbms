@@ -26,6 +26,13 @@ public:
         dbName = n;
     }
 
+    void saveFile() {
+        for (int i = 0; i < tbName.size(); i++) {
+            Table* tb = getTable(tbName[i]);
+            tb->saveFile();
+        }
+    }
+
     void dropTB(string name) {
         if (tbMap.count(name) == 0) {
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
@@ -67,9 +74,9 @@ public:
         tb->insert(t, v);
     }
 
-    void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond) {
+    void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
         Table* tb = getTable(t[0]);
-        tb->select(attrs, cond);
+        tb->select(attrs, cond, opVec, attrId, gName);
     }
 
     void descTB(string name) {
