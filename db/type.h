@@ -23,7 +23,7 @@ public:
 		notNull = n;
 		type = t;
 	}
-	Type(){}
+	Type() {}
 	virtual void write(uint* b, int pos) {
 		if(type == INTE){
 			char* bb = (char*) b;
@@ -78,6 +78,7 @@ class Varchar : public Type {
 public:
 	Varchar(string value, int len, bool n) : Type(len, n, STRING) {
 		str = value;
+		number = 0;
 	}
 	virtual void write (uint* b, int pos) {
 		// pos - nth byte of page b

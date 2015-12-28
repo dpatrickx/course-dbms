@@ -15,9 +15,6 @@
 
 class DBManager {
 private:
-    DB* getDB(string name) {
-        return dbMap[name];
-    }
     DBManager(string r) {
         root = r;
         if (root[root.size()-1] != '/')
@@ -26,6 +23,9 @@ private:
     }
 
 public:
+    DB* getDB(string name) {
+        return dbMap[name];
+    }
     static DBManager* _instance;
     static DBManager* instance(string r) {
         if (_instance == 0) {
@@ -38,6 +38,13 @@ public:
     string currDbName;
     string root;        // root/dbname
     DB* currDb;
+
+    void saveFile() {
+        for (int i = 0; i < dbName.size(); i++) {
+            DB* db = getDB(dbName[i]);
+            db->saveFile();
+        }
+    }
 
     void showDBs() {
         cout<<"+--------------------+\n";

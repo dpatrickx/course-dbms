@@ -24,20 +24,29 @@ using namespace std;
 //      null bitmap - 0: null, 1: not null
 
 class Table {
-private:
+public:
     int _fileID;
     int length;     // length of item / byte
     int slotNum;    // number of data slot
     int bitSize;    // number of bitmap bits in the end of page
     int typeNum;
     uint pageNum;   // first 4 bytes of first page of the file
-    BufPageManager* bpm;
-    FileManager* fm;
-    map<string, int> offset;
+    int nullPos;     // offset of null bitmap in each item
+    int freeNumPos;  // freeMapPos - 4
+    int freeMapPos;  // offset of free bitmap in each page
+
+    string tbName;
+    string path;    // path/tbName.txt
     string priKey;
+
+    map<string, int> offset;
     vector<string> sequence;
     map<string, vector<string> > check;
+    Attr example;
+
     HashMap hashMap;
+    BufPageManager* bpm;
+    FileManager* fm;
 
     // 1. write every Type
     // 2. write NullBitMap
@@ -70,13 +79,8 @@ private:
             }
         }
     }
-public:
-    string tbName;
-    string path;    // path/name.txt
-    Attr example;
-    int nullPos;     // offset of null bitmap in each item
-    int freeNumPos;  // freeMapPos - 4
-    int freeMapPos;  // offset of free bitmap in each page
+
+    Table() {}
 
     Table(const TableCon& c, string n, string root) {
         // set priKey
@@ -174,8 +178,10 @@ public:
         bpm->markDirty(index);
     }
 
-    ~Table() {
+    void saveFile() {
+        cout<<"save File "<<tbName<<"\n";
         bpm->close();
+        fm->closeFile(_fileID);
     }
 
     // describe talbe

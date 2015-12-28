@@ -10,9 +10,9 @@ using namespace std;
 class Attr {
 public:
 	int length;
-	map<string, Type> attributes;
-	string tableName;	// the name of the table which attr belongs to
 	bool active;
+	string tableName;	// the name of the table which attr belongs to
+	map<string, Type> attributes;
 
 	void addAttr(Type type, string name) {
 		attributes.insert(pair<string, Type>(name, type));

@@ -26,6 +26,13 @@ public:
         dbName = n;
     }
 
+    void saveFile() {
+        for (int i = 0; i < tbName.size(); i++) {
+            Table* tb = getTable(tbName[i]);
+            tb->saveFile();
+        }
+    }
+
     void dropTB(string name) {
         if (tbMap.count(name) == 0) {
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
