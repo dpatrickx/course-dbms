@@ -37,7 +37,7 @@ public:
 		    for (int i = 1;i < str.size()-1;i++) {
 		        *(bb+i-1) = str[i];
 		    }
-		    if(str.size() < length){
+		    if(str.size()-2 <= length){
 		    	*(bb+str.size()-2) = '\0';
 		    }
 		}
@@ -60,6 +60,8 @@ public:
 class Null : public Type {
 public:
 	Null() : Type(0, 0, NUL) {
+		str = "";
+		value = 0;
 	}
 	virtual void write (uint* b, int pos) {
 		// pos - nth byte of page b

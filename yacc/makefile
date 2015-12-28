@@ -15,4 +15,4 @@ yacc.tab.c  yacc.tab.h: yacc.y
 	$(YACC) -d yacc.y
 
 clean:
-	@rm -f $(OBJECT)  *.OBJECT
+	@rm -f $(OBJECT)  *.OBJECT yacc.tab.c  yacc.tab.h

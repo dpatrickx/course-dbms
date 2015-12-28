@@ -2,12 +2,14 @@
 #define TABLE_H
 
 #include "../bufmanager/BufPageManager.h"
+#include "../utils/HashMap.h"
 #include "attr.h"
 #include "para.h"
 #include "auxSql.h"
 #include <iostream>
 #include <string.h>
 #include <vector>
+#include <sstream>
 using namespace std;
 
 // one table stored in one file
@@ -35,6 +37,7 @@ private:
     string priKey;
     vector<string> sequence;
     map<string, vector<string> > check;
+    HashMap hashMap;
 
     // 1. write every Type
     // 2. write NullBitMap
@@ -102,7 +105,7 @@ public:
                 len += 4;
             else if (tempType == "varchar") {
                 int tempLen = atoi(c.length[i].c_str());
-                len += tempLen;
+                len += (tempLen + 1);
             } else if (tempType == "bool") {
                 len += 1;
             }
@@ -120,8 +123,8 @@ public:
                 ex.attributes.insert(pair<string, Integer>(c.name[i], type));
             } else if (tempType == "varchar") {
                 int tempLen = atoi(c.length[i].c_str());
-                len -= tempLen;
-                Varchar type("xuhan", tempLen, c.notNull[i]);
+                len -= (tempLen + 1);
+                Varchar type("xuhan", tempLen + 1, c.notNull[i]);
                 ex.attributes.insert(pair<string, Varchar>(c.name[i], type));
             } else if (tempType == "bool") {
                 len -= 1;
@@ -188,7 +191,7 @@ public:
                     cout<<"INT("<<(it->second).number<<") |";
                     break;
                 case STRING:
-                    cout<<"VARCHAR("<<(it->second).length<<") |";
+                    cout<<"VARCHAR("<<(it->second).length - 1<<") |";
                     break;
                 default: break;
             }
@@ -207,6 +210,7 @@ public:
     void showTB(int pageID){
         int index;
         BufType b = bpm->getPage(_fileID, pageID, index);
+        bpm->access(index);
         char* bb = (char*)b;
         for (int i = 0; i < 40; i++) {
             for (int j = 7; j>= 0; j--)
@@ -349,6 +353,7 @@ public:
                 //map<string, int>::iterator it = offset.begin();
                 bool conti = 1;
                 for(int j = 0; j < value[i].size(); j++){//every type
+                    //check
                     conti = 1;
                     string itemName = sequence[j];
                     map<string, vector<string> >::iterator c_it;
@@ -368,6 +373,19 @@ public:
                         cout << "Check error" << endl;
                         break;
                     }
+                    //hash
+                    if(itemName == priKey){
+                        bool res = hashMap.check(value[i][j]);
+                        if(!res){
+                            hashMap.insert(value[i][j]);
+                        }
+                        else{
+                            conti = 1;
+                            cout << "Primary Key Conflict!" << endl;
+                            break;
+                        }
+                    }
+                    //write
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
                     int type = exam->getType();
@@ -447,6 +465,7 @@ public:
                     bool exist = 0;
                     for(int j = 0; j < items.size(); j++){
                         if(items[j] == itemName){
+                            //check
                             conti = 1;
                             map<string, vector<string> >::iterator c_it;
                             c_it = check.find(itemName);
@@ -465,7 +484,19 @@ public:
                                 cout << "Check error" << endl;
                                 break;
                             }
-                            
+                            //hash
+                            if(itemName == priKey){
+                                bool res = hashMap.check(value[i][j]);
+                                if(!res){
+                                    hashMap.insert(value[i][j]);
+                                }
+                                else{
+                                    conti = 1;
+                                    cout << "Primary Key Conflict!" << endl;
+                                    break;
+                                }
+                            }
+                            //write
                             Type* exam = new Type();
                             exam = example.getAttr(itemName);
                             int type = exam->getType();
@@ -535,6 +566,9 @@ public:
                             break;
                         }
                     }
+                    if(conti){
+                        break;
+                    }
                     if(!exist){
                         Type* null = new Null();
                         writeItems->addAttr(*null, itemName);
@@ -548,10 +582,141 @@ public:
         }
     }
 
-    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond){
+    void operation(int op, string attrID, CondSql cond, string group){
+        if(group == ""){
+            int sum = 0;
+            int avg = 0;
+            int mx = 0;
+            int mn = 2147483647;
+            int num = 0;
+            for(int i = 1; i <= pageNum; i++){
+                int index;
+                BufType b = bpm->getPage(_fileID, i, index);
+                bpm->access(index);
+                char* bb = (char*) b;
+                int j = 0;
+                for(j = 0; j < slotNum; j++){
+                    int pos = freeMapPos;
+                    pos += (j/8);
+                    int temp = j%8; 
+                    if (((bb[pos]>>(7-temp))&1)){
+                        if(conform(cond, i, j)){
+                            int temp = *((uint*)(bb + j*length + offset[attrID]));
+                            num++;
+                            sum += temp;
+                            if(temp > mx)
+                                mx = temp;
+                            if(temp < mn)
+                                mn = temp;
+                        }
+                    }
+                }
+            }
+            avg = sum/num;
+            if(op == 1)
+                cout << "SUM(" << attrID << "): " << sum << endl;
+            else if(op == 2)
+                cout << "AVG(" << attrID << "): " << avg << endl;
+            else if(op == 3)
+                cout << "MAX(" << attrID << "): " << mx << endl;
+            else if(op == 4)
+                cout << "MIN(" << attrID << "): " << mn << endl;
+        }
+        else{
+            map<string, int> g;
+            map<string, int> num;
+            Type* t = example.getAttr(group);
+            int type = t->getType();
+            for(int i = 1; i <= pageNum; i++){
+                int index;
+                BufType b = bpm->getPage(_fileID, i, index);
+                bpm->access(index);
+                char* bb = (char*) b;
+                int j = 0;
+                for(j = 0; j < slotNum; j++){
+                    int pos = freeMapPos;
+                    pos += (j/8);
+                    int temp = j%8; 
+                    if (((bb[pos]>>(7-temp))&1)){
+                        if(conform(cond, i, j)){
+                            string tmp;
+                            if(type == INTE){
+                                stringstream ss;
+                                ss<<*((uint*)(bb + j*length + offset[group]));
+                                ss>>tmp;
+                            }
+                            else if(type == STRING){
+                                char tp[t->length+10];
+                                strncpy(tp, (bb + j*length + offset[group]), t->length);
+                                string tpp(tp);
+                                tmp = tpp;
+                            }
+                            map<string, int>::iterator o_it;
+                            o_it = g.find(tmp);
+                            if(o_it == g.end()){
+                                if(op != 4 && op != 2)
+                                    g[tmp] = 0;
+                                else if(op == 2){
+                                    num[tmp] = 0;
+                                }
+                                else
+                                    g[tmp] = 2147483647;
+                            }
+                            int temp = *((uint*)(bb + j*length + offset[attrID]));
+                            if(op == 1)
+                                g[tmp] += temp;
+                            else if(op == 2){
+                                num[tmp]++;
+                                g[tmp] += temp;
+                            }
+                            else if(op == 3){
+                                if(temp > g[tmp])
+                                    g[tmp] = temp;
+                            }
+                            else if(op == 4){
+                                if(temp < g[tmp])
+                                    g[tmp] = temp;
+                            }
+                        }
+                    }
+                }
+            }
+            for(map<string, int>::iterator it = g.begin(); it != g.end(); it++){
+                if(op == 1)
+                    cout << it->first << ": " << "SUM(" << attrID << "): " << it->second << endl;
+                else if(op == 2)
+                    cout << it->first << ": " << "AVG(" << attrID << "): " << (it->second/num[it->first]) << endl;
+                else if(op == 3)
+                    cout << it->first << ": " << "MAX(" << attrID << "): " << it->second << endl;
+                else if(op == 4)
+                    cout << it->first << ": " << "MIN(" << attrID << "): " << it->second << endl;
+            }
+        }
+    }
+
+    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond, vector<string> op, vector<string> attrID){
+        if(op.size() != 0){
+            cout<<"+------------------------------+\n";
+            for(int i = 0; i < op.size(); i++){
+                if(op[i] == "sum"){
+                    operation(1, attrID[i], cond, "bjs");
+                }
+                else if(op[i] == "max"){
+                    operation(3, attrID[i], cond, "bjs");
+                }
+                else if(op[i] == "avg"){
+                    operation(2, attrID[i], cond, "bjs");
+                }
+                else if(op[i] == "min"){
+                    operation(4, attrID[i], cond, "bjs");
+                }
+            }
+            return;
+        }
         for(int i = 1; i <= pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
+            bpm->access(index);
             char* bbt = (char*) bt;
             int j = 0;
             for(j = 0; j < slotNum; j++){
@@ -562,10 +727,11 @@ public:
                     if(conform(cond, i, j)){
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);
+                        bpm->access(index);
                         char* bb = (char*)b;
                         bb += j*length;
                         cout<<"+------------------------------+\n";
-                        for(int k = 0; k < attrs.size(); k++){
+                        for(int k = 0; k < attrs.size(); k++){ //select * from
                             if(attrs[k].attrName == "*"){
                                 for(int m = 0; m < sequence.size(); m++){
                                     Type* temp = new Type();
@@ -573,32 +739,91 @@ public:
                                     int off = offset[sequence[m]];
                                     int type = temp->getType();
                                     if(type == INTE){
-                                        cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                                        if(*((uint*)(bb+off)) != 0)
+                                            cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                                        else{
+                                            int poss = nullPos;
+                                            poss += (m/8);
+                                            int tmp = m%8;
+                                            if(((bb[poss]>>(7-tmp))&1)){
+                                                cout << sequence[m] << ": " << 0 << endl;
+                                            }
+                                            else{
+                                                cout << sequence[m] << ": " << "null" << endl;
+                                            }
+                                        }
                                     }
                                     else if(type == STRING){
                                         int len = temp->length;
-                                        char c[len];
+                                        char c[len+10];
                                         strncpy(c, bb+off, len);
-                                        cout << sequence[m] << ": " << c << endl;
+                                        if(strcmp(c, "") != 0)
+                                            cout << sequence[m] << ": " << c << endl;
+                                        else{
+                                            int poss = nullPos;
+                                            poss += (m/8);
+                                            int tmp = m%8;
+                                            if(((bb[poss]>>(7-tmp))&1)){
+                                                cout << sequence[m] << ": " << "" << endl;
+                                            }
+                                            else{
+                                                cout << sequence[m] << ": " << "null" << endl;
+                                            }
+                                        }
                                     }
                                 }
                                 break;
                             }
+                            // not select * from
                             Type* temp = new Type();
                             temp = example.getAttr(attrs[k].attrName);
                             int off = offset[attrs[k].attrName];
                             int type = temp->getType();
+                            int m;
+                            for(int sk = 0; sk < sequence.size(); sk++){
+                                if(attrs[k].attrName == sequence[sk]){
+                                    m = sk;
+                                    break;
+                                }
+                            }
                             if(type == INTE){
-                                cout << attrs[k].attrName << ": " << *((uint*)(bb+off)) << endl;
+                                if(*((uint*)(bb+off)) != 0)
+                                    cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                                else{
+                                    int poss = nullPos;
+                                    poss += (m/8);
+                                    int tmp = m%8;
+                                    if(((bb[poss]>>(7-tmp))&1)){
+                                        cout << sequence[m] << ": " << 0 << endl;
+                                    }
+                                    else{
+                                        cout << sequence[m] << ": " << "null" << endl;
+                                    }
+                                }
                             }
                             else if(type == STRING){
                                 int len = temp->length;
-                                char c[len];
+                                char c[len+10];
                                 strncpy(c, bb+off, len);
-                                cout << attrs[k].attrName << ": " << c << endl;
+                                if(strcmp(c, "") != 0)
+                                    cout << sequence[m] << ": " << c << endl;
+                                else{
+                                    int poss = nullPos;
+                                    poss += (m/8);
+                                    int tmp = m%8;
+                                    if(((bb[poss]>>(7-tmp))&1)){
+                                        cout << sequence[m] << ": " << "" << endl;
+                                    }
+                                    else{
+                                        cout << sequence[m] << ": " << "null" << endl;
+                                    }
+                                }
                             }
                         }
                     }
+                    // else{
+                    //     cout << "Such Item Not Found" << endl;
+                    // }
                 }
             }
         }
@@ -608,6 +833,7 @@ public:
         for(int i = 1; i <= pageNum; i++) {
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
+            bpm->access(index);
             char* bbt = (char*) bt;
             int j = 0;
             for(j = 0; j < slotNum; j++) {
@@ -621,15 +847,32 @@ public:
                         bpm->markDirty(index);
                         removeItem(i, j);
                     }
+                    else{
+                        cout << "Such Item Not Found" << endl;
+                    }
                 }
             }
         }
+    }
+
+    bool isCheck(string name, string content){
+        map<string, vector<string> >::iterator c_it;
+        c_it = check.find(name);
+        if(c_it != check.end()){
+            for(int ss = 0; ss < c_it->second.size(); ss++){
+                if(content == c_it->second[ss]){
+                    return 1;
+                }
+            }
+        }
+        return 0;
     }
 
     void update(vector<CondItem> set, CondSql cond) {
         for(int i = 1; i <= pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
+            bpm->access(index);
             char* bbt = (char*) bt;
             int j = 0;
             for(j = 0; j < slotNum; j++){
@@ -643,7 +886,7 @@ public:
                         BufType b = bpm->getPage(_fileID, i, index);
                         bpm->markDirty(index);
                         char* bb = (char*)b + j*length;
-                        for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){
+                        for(map<string, int>::iterator it = offset.begin(); it != offset.end(); it++){ // get a new item
                             string itemName = it->first;
                             Type* temp = new Type();
                             temp = example.getAttr(itemName);
@@ -657,27 +900,74 @@ public:
                                 char v[temp->length+10];
                                 strncpy(v, bb + offset[itemName], temp->length);
                                 string val(v);
-                                ((Varchar*)temp)->str = val;
+                                ((Varchar*)temp)->str = "\'" + val + '\'';
                                 waitUpdate->addAttr(*temp, itemName);
                             }
                         }
+                        bool cont = 1;
                         for(int k = 0; k < set.size(); k++){
                             Type* temp = new Type();
                             temp = example.getAttr(set[k].attr1.attrName);
                             int type = temp->getType();
                             if(set[k].attr2.isNull()){
-                                if(type == INTE){
-                                    ((Integer*)temp)->value = set[k].expression.value;
+                                if(set[k].expression.str == "null"){
+                                    if(temp->notNull){
+                                        cout << "Update Error" << endl;
+                                        cont = 0;
+                                        break;
+                                    }
+                                    else{
+                                        if(type == INTE){
+                                            ((uint*)bb)[offset[set[k].attr1.attrName]] = 0;
+                                        }
+                                        else if(type == STRING){
+                                            bb[offset[set[k].attr1.attrName]] = '\0';
+                                        }
+                                        temp = new Null();
+                                    }
                                 }
-                                else if(type == STRING){
-                                    ((Varchar*)temp)->str = set[k].expression.str;
+                                else{
+                                    if(type == INTE){
+                                        stringstream sss;
+                                        sss<<set[k].expression.value;
+                                        string content;
+                                        sss>>content;
+                                        if(isCheck(set[k].attr1.attrName, content) == 0){
+                                            cont = 0;
+                                            cout << "Update Check Error" << endl;
+                                            break;
+                                        }
+                                        ((Integer*)temp)->value = set[k].expression.value;
+                                    }
+                                    else if(type == STRING){
+                                        if(isCheck(set[k].attr1.attrName, set[k].expression.str) == 0){
+                                            cont = 0;
+                                            cout << "Update Check Error" << endl;
+                                            break;
+                                        }
+                                        ((Varchar*)temp)->str = set[k].expression.str;
+                                    }
                                 }
                             }
                             else if(set[k].expression.isNull()){
                                 if(type == INTE){
+                                    stringstream sss;
+                                    sss<<((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
+                                    string content;
+                                    sss>>content;
+                                    if(isCheck(set[k].attr1.attrName, content) == 0){
+                                        cont = 0;
+                                        cout << "Update Check Error" << endl;
+                                        break;
+                                    }
                                     ((Integer*)temp)->value = ((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
                                 }
                                 else if(type == STRING){
+                                    if(isCheck(set[k].attr1.attrName, ((Varchar*)(waitUpdate->getAttr(set[k].attr2.attrName)))->str) == 0){
+                                        cont = 0;
+                                        cout << "Update Check Error" << endl;
+                                        break;
+                                    }
                                     ((Varchar*)temp)->str = ((Varchar*)(waitUpdate->getAttr(set[k].attr2.attrName)))->str;
                                 }
                             }
@@ -695,16 +985,47 @@ public:
                                 else if(set[k].expression.ops[0] == "/"){
                                     a2 /= atoi(set[k].expression.numbers[0].c_str());
                                 }
+                                stringstream sss;
+                                sss<<a2;
+                                string content;
+                                sss>>content;
+                                if(isCheck(set[k].attr1.attrName, content) == 0){
+                                    cont = 0;
+                                    cout << "Update Check Error" << endl;
+                                    break;
+                                }
                                 ((Integer*)temp)->value = a2;
                             }
                             waitUpdate->attributes[set[k].attr1.attrName] = *temp;
                         }
+                        if(cont == 0){
+                            continue;
+                        }
                         updateItem(i, j, *waitUpdate);
                     }
+                    // else{
+                    //     cout << "Such Item Not Found" << endl;
+                    // }
                 }
             }
         }
     }
+
+    // void split(std::string& s, std::string& delim, vector<string>* ret)  
+    // {  
+    //     size_t last = 0;  
+    //     size_t index = s.find_first_of(delim,last);  
+    //     while (index!=std::string::npos)  
+    //     {  
+    //         ret->push_back(s.substr(last,index-last));  
+    //         last=index+1;  
+    //         index=s.find_first_of(delim,last);  
+    //     }  
+    //     if (index-last>0)  
+    //     {  
+    //         ret->push_back(s.substr(last,index-last));  
+    //     }  
+    // }  
 
     bool conform(CondSql cond, int pageID, int rID){ // build a attr according to pageID & rID
         if(cond.conditions.size() == 0)
@@ -735,7 +1056,7 @@ public:
         bool ret = 1;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
-            if(item.judgeOp == "="){
+            if(item.judgeOp == "="){ // case = 
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTE){
                     if(item.expression.isNull()){
@@ -747,12 +1068,28 @@ public:
                         }
                     }
                     else if(item.attr2.isNull()){
-                        if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
+                        if(item.expression.str == "null"){
+                            int poss = nullPos;
+                            int m;
+                            for(int sk = 0; sk < sequence.size(); sk++){
+                                if(item.attr1.attrName == sequence[sk]){
+                                    m = sk;
+                                    break;
+                                }
+                            }
+                            poss += (m/8);
+                            int tmp = m%8;
+                            if(((bb[poss]>>(7-tmp))&1)){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
                             item.expression.value){
                             ret = 0;
                             // cout << "B" <<endl;
                             break;
-                        } 
+                        }
                     }
                     else{
                         int a2 = ((Integer*)test->getAttr(item.attr2.attrName))->value;
@@ -786,16 +1123,70 @@ public:
                         }
                     }
                     else{
-                        string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
-                        if(compare != item.expression.str){
-                            ret = 0;
-                            // cout << "E" <<endl;
-                            break;
+                        if(item.expression.str == "null"){
+                            int poss = nullPos;
+                            int m;
+                            for(int sk = 0; sk < sequence.size(); sk++){
+                                if(item.attr1.attrName == sequence[sk]){
+                                    m = sk;
+                                    break;
+                                }
+                            }
+                            poss += (m/8);
+                            int tmp = m%8;
+                            if(((bb[poss]>>(7-tmp))&1)){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else if(item.expression.str.find("%") != string::npos){
+                            string s = item.expression.str;
+                            string delim = "%";
+                            vector<string> retu;
+                            size_t last = 0;  
+                            size_t index = s.find_first_of(delim,last);  
+                            while (index!=std::string::npos)  
+                            {  
+                                retu.push_back(s.substr(last,index-last));
+                                last=index+1;  
+                                index=s.find_first_of(delim,last);  
+                            }  
+                            if (index-last>0)  
+                            {  
+                                retu.push_back(s.substr(last,index-last));  
+                            }
+                            string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
+                            int total = retu.size();
+                            int found = compare.find(retu[0]);
+                            if(found != 0){
+                                ret = 0;
+                                break;
+                            }
+                            for(int p = 1; p < total; p++){
+                                int tt = compare.find(retu[p], found);
+                                if(tt == string::npos){
+                                    found = tt;
+                                    break;
+                                }
+                                found = tt + retu[p].size();
+                            }
+                            if(found == string::npos || found != compare.size()){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else{
+                            string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
+                            if(compare != item.expression.str){
+                                ret = 0;
+                                // cout << "E" <<endl;
+                                break;
+                            }
                         }
                     }
                 }
             }
-            else{
+            else{ //case < > <= >= (only int)
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTE){
                     if(item.expression.isNull()){ // attr1 </<=/>/>=attr2

@@ -31,14 +31,14 @@ int main(){
 	vector<bool> notNull;
 	notNull.push_back(0);
 	notNull.push_back(1);
-	notNull.push_back(1);
+	notNull.push_back(0);
 	TableCon* tbc = new TableCon();
 	tbc->init(n, type, "xuhan");
 	tbc->length = len;
 	tbc->notNull = notNull;
 	tbc->checkAttrs.push_back("bjs");
 	vector<string> val;
-	val.push_back("\'aaa\'");
+	val.push_back("\'F\'");
 	val.push_back("\'M\'");
 	tbc->checkVal.push_back(val);
 	Table* tb = new Table(*tbc, "test", "test");
@@ -48,13 +48,23 @@ int main(){
 
 	//test insert
 	vector<string> v;
-	v.push_back("null");
+	v.push_back("9");
 	v.push_back("\'F\'");
-	v.push_back("\'fuck\'");
+	v.push_back("\'aa\'");
+	vector<string> ab;
+	ab.push_back("8");
+	ab.push_back("\'F\'");
+	ab.push_back("\'ababa\'");
+	vector<string> abc;
+	abc.push_back("7");
+	abc.push_back("\'M\'");
+	abc.push_back("\'babab\'");
 	vector<vector<string> > vv;
 	vv.push_back(v);
+	vv.push_back(ab);
+	vv.push_back(abc);
 	vector<string> l;
-	for (int i = 0;i < 10; i++)
+	// for (int i = 0;i < 10; i++)
 		tb->insert(n, vv);
 	tb->showTB(1);
 
@@ -66,20 +76,20 @@ int main(){
 	AttrItem item1("", "xuhan");
 	AttrItem item2("", "");
 	Expression expr;
-	expr.value = 9;
+	expr.value = 10;
 	CondItem conditem("=", item1, item2, expr);
 
-	AttrItem item3("", "bjs");
+	AttrItem item3("", "xuhan");
 	Expression expr1;
-	expr1.str = "\'hhh\'";
+	expr1.str = "null";
 	CondItem condi("=", item3, item2, expr1);
 
 	cond.conditions.push_back(conditem);
 	set.push_back(condi);
 
-	// cout << endl;
+	cout << endl;
 	tb->update(set, cond);
-	//tb->showTB(1);
+	tb->showTB(1);
 	//cout << tb->conform(cond, 1, 0) << endl << endl;
 	//cout << tb->conform(cond, 1, 1) << endl;
 	//cout << tb->conform(cond, 1, 2) << endl;
@@ -90,16 +100,26 @@ int main(){
 	vector<string> tables;
 	CondSql cond1;
 
-	AttrItem item11("", "bjs");
+	AttrItem item11("", "dhy");
 	AttrItem item22("", "");
 	Expression expr11;
-	expr11.str = "\'hhh\'";
+	expr11.str = "\'%a%b%\'";
 	CondItem conditem1("=", item11, item22, expr11);
 
 	cond1.conditions.push_back(conditem1);
 	AttrItem item12("", "*");
 	attrs.push_back(item12);
 	tables.push_back("test");
-	tb->select(attrs, cond1);
+	vector<string> op;
+	op.push_back("sum");
+	op.push_back("avg");
+	op.push_back("max");
+	op.push_back("min");
+	vector<string> attrID;
+	attrID.push_back("xuhan");
+	attrID.push_back("xuhan");
+	attrID.push_back("xuhan");
+	attrID.push_back("xuhan");
+	tb->select(attrs, cond1, op, attrID);
 	//cout << tb->conform(cond1, 1, 0) << endl;
 }
