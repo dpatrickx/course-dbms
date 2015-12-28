@@ -3,6 +3,7 @@
 
 #include "../bufmanager/BufPageManager.h"
 #include "../utils/HashMap.h"
+#include "./stx/btree.h"
 #include "attr.h"
 #include "para.h"
 #include "auxSql.h"
@@ -78,7 +79,10 @@ public:
     int freeNumPos;  // freeMapPos - 4
     int freeMapPos;  // offset of free bitmap in each page
 
+    stx::btree<int, pair<int, int> >* bt;
+
     Table(const TableCon& c, string n, string root) {
+        bt = new stx::btree<int, pair<int, int> >();
         // set priKey
         priKey = c.priKey;
         // set name
@@ -309,6 +313,7 @@ public:
             }
         }
         // writeItem
+        bt->insert(attribute.attributes["xuhan"].value, pair<int, int>(emptyPage, emptyRid));
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
     }
@@ -600,7 +605,7 @@ public:
                     pos += (j/8);
                     int temp = j%8; 
                     if (((bb[pos]>>(7-temp))&1)){
-                        if(conform(cond, i, j)){
+                        if(conform(cond, i, j, vector<Table*>())){
                             int temp = *((uint*)(bb + j*length + offset[attrID]));
                             num++;
                             sum += temp;
@@ -638,7 +643,7 @@ public:
                     pos += (j/8);
                     int temp = j%8; 
                     if (((bb[pos]>>(7-temp))&1)){
-                        if(conform(cond, i, j)){
+                        if(conform(cond, i, j, vector<Table*>())){
                             string tmp;
                             if(type == INTE){
                                 stringstream ss;
@@ -694,7 +699,9 @@ public:
         }
     }
 
-    void select(vector<AttrItem> attrs/*, JoinSql join*/, CondSql cond, vector<string> op, vector<string> attrID){
+    map<string, vector<int> > pID;
+    map<string, vector<int> > rankID;
+    void select(vector<AttrItem> attrs, CondSql cond, vector<string> op, vector<string> attrID, vector<Table*> tb){
         if(op.size() != 0){
             cout<<"+------------------------------+\n";
             for(int i = 0; i < op.size(); i++){
@@ -724,106 +731,129 @@ public:
                 pos += (j/8);
                 int temp = j%8;
                 if (((bbt[pos]>>(7-temp))&1)){
-                    if(conform(cond, i, j)){
-                        int index;
-                        BufType b = bpm->getPage(_fileID, i, index);
-                        bpm->access(index);
-                        char* bb = (char*)b;
-                        bb += j*length;
-                        cout<<"+------------------------------+\n";
-                        for(int k = 0; k < attrs.size(); k++){ //select * from
-                            if(attrs[k].attrName == "*"){
-                                for(int m = 0; m < sequence.size(); m++){
-                                    Type* temp = new Type();
-                                    temp = example.getAttr(sequence[m]);
-                                    int off = offset[sequence[m]];
-                                    int type = temp->getType();
-                                    if(type == INTE){
-                                        if(*((uint*)(bb+off)) != 0)
-                                            cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
-                                        else{
-                                            int poss = nullPos;
-                                            poss += (m/8);
-                                            int tmp = m%8;
-                                            if(((bb[poss]>>(7-tmp))&1)){
-                                                cout << sequence[m] << ": " << 0 << endl;
-                                            }
-                                            else{
-                                                cout << sequence[m] << ": " << "null" << endl;
-                                            }
-                                        }
-                                    }
-                                    else if(type == STRING){
-                                        int len = temp->length;
-                                        char c[len+10];
-                                        strncpy(c, bb+off, len);
-                                        if(strcmp(c, "") != 0)
-                                            cout << sequence[m] << ": " << c << endl;
-                                        else{
-                                            int poss = nullPos;
-                                            poss += (m/8);
-                                            int tmp = m%8;
-                                            if(((bb[poss]>>(7-tmp))&1)){
-                                                cout << sequence[m] << ": " << "" << endl;
-                                            }
-                                            else{
-                                                cout << sequence[m] << ": " << "null" << endl;
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
+                    pID.erase(pID.begin(),pID.end());
+                    rankID.erase(rankID.begin(),rankID.end());
+                    if(conform(cond, i, j, tb)){
+                        show(attrs, i, j, tb);
+                    }
+                }
+            }
+        }
+        bt->print(cout);
+    }
+
+    void show(vector<AttrItem> attrs, int i, int j, vector<Table*> tb){ // i->pageID, j->rID
+        int index;
+        BufType b = bpm->getPage(_fileID, i, index);
+        bpm->access(index);
+        char* bb = (char*)b;
+        bb += j*length;
+        cout<<"+------------------------------+\n";
+        for(int k = 0; k < attrs.size(); k++){ //select * from
+            if(attrs[k].attrName == "*"){
+                for(int m = 0; m < sequence.size(); m++){
+                    Type* temp = new Type();
+                    temp = example.getAttr(sequence[m]);
+                    int off = offset[sequence[m]];
+                    int type = temp->getType();
+                    if(type == INTE){
+                        if(*((uint*)(bb+off)) != 0)
+                            cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                        else{
+                            int poss = nullPos;
+                            poss += (m/8);
+                            int tmp = m%8;
+                            if(((bb[poss]>>(7-tmp))&1)){
+                                cout << sequence[m] << ": " << 0 << endl;
                             }
-                            // not select * from
-                            Type* temp = new Type();
-                            temp = example.getAttr(attrs[k].attrName);
-                            int off = offset[attrs[k].attrName];
-                            int type = temp->getType();
-                            int m;
-                            for(int sk = 0; sk < sequence.size(); sk++){
-                                if(attrs[k].attrName == sequence[sk]){
-                                    m = sk;
-                                    break;
-                                }
-                            }
-                            if(type == INTE){
-                                if(*((uint*)(bb+off)) != 0)
-                                    cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
-                                else{
-                                    int poss = nullPos;
-                                    poss += (m/8);
-                                    int tmp = m%8;
-                                    if(((bb[poss]>>(7-tmp))&1)){
-                                        cout << sequence[m] << ": " << 0 << endl;
-                                    }
-                                    else{
-                                        cout << sequence[m] << ": " << "null" << endl;
-                                    }
-                                }
-                            }
-                            else if(type == STRING){
-                                int len = temp->length;
-                                char c[len+10];
-                                strncpy(c, bb+off, len);
-                                if(strcmp(c, "") != 0)
-                                    cout << sequence[m] << ": " << c << endl;
-                                else{
-                                    int poss = nullPos;
-                                    poss += (m/8);
-                                    int tmp = m%8;
-                                    if(((bb[poss]>>(7-tmp))&1)){
-                                        cout << sequence[m] << ": " << "" << endl;
-                                    }
-                                    else{
-                                        cout << sequence[m] << ": " << "null" << endl;
-                                    }
-                                }
+                            else{
+                                cout << sequence[m] << ": " << "null" << endl;
                             }
                         }
                     }
-                    // else{
-                    //     cout << "Such Item Not Found" << endl;
-                    // }
+                    else if(type == STRING){
+                        int len = temp->length;
+                        char c[len+10];
+                        strncpy(c, bb+off, len);
+                        if(strcmp(c, "") != 0)
+                            cout << sequence[m] << ": " << c << endl;
+                        else{
+                            int poss = nullPos;
+                            poss += (m/8);
+                            int tmp = m%8;
+                            if(((bb[poss]>>(7-tmp))&1)){
+                                cout << sequence[m] << ": " << "" << endl;
+                            }
+                            else{
+                                cout << sequence[m] << ": " << "null" << endl;
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+            // not select * from
+            if(attrs[k].tableName != ""){
+                int nn;
+                for(nn = 0; nn < tb.size(); nn++){
+                    if(attrs[k].tableName == tb[nn]->tbName){
+                        break;
+                    }
+                }
+                AttrItem attrTrans("", attrs[k].attrName);
+                vector<AttrItem> attrss;
+                attrss.push_back(attrTrans);
+                for(int ii = 0; ii < pID[tb[nn]->tbName].size(); ii++){
+                    cout << "*** " << tb[nn]->tbName << " ***" << endl;
+                    tb[nn]->show(attrss, pID[tb[nn]->tbName][ii], rankID[tb[nn]->tbName][ii], vector<Table*>());
+                    cout<<"+******************************+\n";
+                    cout<<"+------------------------------+\n";
+                }
+            }
+            else{
+                Type* temp = new Type();
+                temp = example.getAttr(attrs[k].attrName);
+                int off = offset[attrs[k].attrName];
+                int type = temp->getType();
+                int m;
+                for(int sk = 0; sk < sequence.size(); sk++){
+                    if(attrs[k].attrName == sequence[sk]){
+                        m = sk;
+                        break;
+                    }
+                }
+                if(type == INTE){
+                    if(*((uint*)(bb+off)) != 0)
+                        cout << sequence[m] << ": " << *((uint*)(bb+off)) << endl;
+                    else{
+                        int poss = nullPos;
+                        poss += (m/8);
+                        int tmp = m%8;
+                        if(((bb[poss]>>(7-tmp))&1)){
+                            cout << sequence[m] << ": " << 0 << endl;
+                        }
+                        else{
+                            cout << sequence[m] << ": " << "null" << endl;
+                        }
+                    }
+                }
+                else if(type == STRING){
+                    int len = temp->length;
+                    char c[len+10];
+                    strncpy(c, bb+off, len);
+                    if(strcmp(c, "") != 0)
+                        cout << sequence[m] << ": " << c << endl;
+                    else{
+                        int poss = nullPos;
+                        poss += (m/8);
+                        int tmp = m%8;
+                        if(((bb[poss]>>(7-tmp))&1)){
+                            cout << sequence[m] << ": " << "" << endl;
+                        }
+                        else{
+                            cout << sequence[m] << ": " << "null" << endl;
+                        }
+                    }
                 }
             }
         }
@@ -841,7 +871,7 @@ public:
                 pos += (j/8);
                 int temp = j%8;
                 if (((bbt[pos]>>(7-temp))&1)) {
-                    if(conform(cond, i, j)){
+                    if(conform(cond, i, j, vector<Table*>())){
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);
                         bpm->markDirty(index);
@@ -880,7 +910,7 @@ public:
                 pos += (j/8);
                 int temp = j%8;
                 if (((bbt[pos]>>(7-temp))&1)){
-                    if(conform(cond, i, j)){
+                    if(conform(cond, i, j, vector<Table*>())){
                         Attr* waitUpdate = new Attr();
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);
@@ -1011,23 +1041,7 @@ public:
         }
     }
 
-    // void split(std::string& s, std::string& delim, vector<string>* ret)  
-    // {  
-    //     size_t last = 0;  
-    //     size_t index = s.find_first_of(delim,last);  
-    //     while (index!=std::string::npos)  
-    //     {  
-    //         ret->push_back(s.substr(last,index-last));  
-    //         last=index+1;  
-    //         index=s.find_first_of(delim,last);  
-    //     }  
-    //     if (index-last>0)  
-    //     {  
-    //         ret->push_back(s.substr(last,index-last));  
-    //     }  
-    // }  
-
-    bool conform(CondSql cond, int pageID, int rID){ // build a attr according to pageID & rID
+    bool conform(CondSql cond, int pageID, int rID, vector<Table*> tb){ // build a attr according to pageID & rID
         if(cond.conditions.size() == 0)
             return 1;
         Attr* test = new Attr();
@@ -1060,11 +1074,71 @@ public:
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTE){
                     if(item.expression.isNull()){
-                        if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
-                            ((Integer*)test->getAttr(item.attr2.attrName))->value){
-                            ret = 0;
-                            // cout << "A" <<endl;
-                            break;
+                        if(item.attr2.tableName != ""){
+                            int nn = 0;
+                            for(nn = 0; nn < tb.size(); nn++){
+                                if(item.attr2.tableName == tb[nn]->tbName){
+                                    break;
+                                }
+                            }
+                            AttrItem attri1("", item.attr2.attrName);
+                            AttrItem attri2("", "");
+                            Expression expr;
+                            expr.value = ((Integer*)test->getAttr(item.attr1.attrName))->value;
+                            CondItem condi("=", attri1, attri2, expr);
+                            CondSql condTrans;
+                            condTrans.conditions.push_back(condi);
+                            bool secondTb = 0;
+                            map<string, vector<int> >::iterator p_it;
+                            p_it = pID.find(tb[nn]->tbName);
+                            if(p_it == pID.end()){
+                                for(int ii = 0; ii < tb[nn]->pageNum; ii++){
+                                    int index;
+                                    BufType bt = tb[nn]->bpm->getPage(tb[nn]->_fileID, ii, index);
+                                    tb[nn]->bpm->access(index);
+                                    char* bbt = (char*) bt;
+                                    int jj = 0;
+                                    for(jj = 0; jj < tb[nn]->slotNum; jj++){
+                                        int pos = tb[nn]->freeMapPos;
+                                        pos += (jj/8);
+                                        int temp = jj%8;
+                                        if (((bbt[pos]>>(7-temp))&1)){
+                                            if(tb[nn]->conform(condTrans, ii, jj, vector<Table*>())){
+                                                pID[tb[nn]->tbName].push_back(ii);
+                                                rankID[tb[nn]->tbName].push_back(jj);
+                                                secondTb = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                for(int iii = 0; iii < pID[tb[nn]->tbName].size(); iii++){
+                                    int ii = pID[tb[nn]->tbName][iii];
+                                    int jj = rankID[tb[nn]->tbName][iii];
+                                    if(tb[nn]->conform(condTrans, ii, jj, vector<Table*>())){
+                                        secondTb = 1;
+                                    }
+                                    else{
+                                        vector<int>::iterator v_it = pID[tb[nn]->tbName].begin() + iii;
+                                        pID[tb[nn]->tbName].erase(v_it);
+                                        v_it = rankID[tb[nn]->tbName].begin() + iii;
+                                        rankID[tb[nn]->tbName].erase(v_it);
+                                    }
+                                }
+                            }
+                            if(secondTb == 0){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else{
+                            if(((Integer*)test->getAttr(item.attr1.attrName))->value != 
+                                ((Integer*)test->getAttr(item.attr2.attrName))->value){
+                                ret = 0;
+                                // cout << "A" <<endl;
+                                break;
+                            }
                         }
                     }
                     else if(item.attr2.isNull()){
@@ -1115,11 +1189,71 @@ public:
                 }
                 else if(type == STRING){
                     if(item.expression.isNull()){
-                        if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
-                            ((Varchar*)test->getAttr(item.attr2.attrName))->str){
-                            ret = 0;
-                            // cout << "D" <<endl;
-                            break;
+                        if(item.attr2.tableName != ""){
+                            int nn = 0;
+                            for(nn = 0; nn < tb.size(); nn++){
+                                if(item.attr2.tableName == tb[nn]->tbName){
+                                    break;
+                                }
+                            }
+                            AttrItem attri1("", item.attr2.attrName);
+                            AttrItem attri2("", "");
+                            Expression expr;
+                            expr.str = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
+                            CondItem condi("=", attri1, attri2, expr);
+                            CondSql condTrans;
+                            condTrans.conditions.push_back(condi);
+                            bool secondTb = 0;
+                            map<string, vector<int> >::iterator p_it;
+                            p_it = pID.find(tb[nn]->tbName);
+                            if(p_it == pID.end()){
+                                for(int ii = 0; ii < tb[nn]->pageNum; ii++){
+                                    int index;
+                                    BufType bt = tb[nn]->bpm->getPage(tb[nn]->_fileID, ii, index);
+                                    tb[nn]->bpm->access(index);
+                                    char* bbt = (char*) bt;
+                                    int jj = 0;
+                                    for(jj = 0; jj < tb[nn]->slotNum; jj++){
+                                        int pos = tb[nn]->freeMapPos;
+                                        pos += (jj/8);
+                                        int temp = jj%8;
+                                        if (((bbt[pos]>>(7-temp))&1)){
+                                            if(tb[nn]->conform(condTrans, ii, jj, vector<Table*>())){
+                                                pID[tb[nn]->tbName].push_back(ii);
+                                                rankID[tb[nn]->tbName].push_back(jj);
+                                                secondTb = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else{
+                                for(int iii = 0; iii < pID[tb[nn]->tbName].size(); iii++){
+                                    int ii = pID[tb[nn]->tbName][iii];
+                                    int jj = rankID[tb[nn]->tbName][iii];
+                                    if(tb[nn]->conform(condTrans, ii, jj, vector<Table*>())){
+                                        secondTb = 1;
+                                    }
+                                    else{
+                                        vector<int>::iterator v_it = pID[tb[nn]->tbName].begin() + iii;
+                                        pID[tb[nn]->tbName].erase(v_it);
+                                        v_it = rankID[tb[nn]->tbName].begin() + iii;
+                                        rankID[tb[nn]->tbName].erase(v_it);
+                                    }
+                                }
+                            }
+                            if(secondTb == 0){
+                                ret = 0;
+                                break;
+                            }
+                        }
+                        else{
+                            if(((Varchar*)test->getAttr(item.attr1.attrName))->str != 
+                                ((Varchar*)test->getAttr(item.attr2.attrName))->str){
+                                ret = 0;
+                                // cout << "D" <<endl;
+                                break;
+                            }
                         }
                     }
                     else{

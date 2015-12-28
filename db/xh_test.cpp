@@ -42,13 +42,14 @@ int main(){
 	val.push_back("\'M\'");
 	tbc->checkVal.push_back(val);
 	Table* tb = new Table(*tbc, "test", "test");
+	Table* tb2 = new Table(*tbc, "test2", "test");
 	//tb->example.display();
 	cout << tb->example.length << endl;
 	cout << endl;
 
 	//test insert
 	vector<string> v;
-	v.push_back("9");
+	v.push_back("10");
 	v.push_back("\'F\'");
 	v.push_back("\'aa\'");
 	vector<string> ab;
@@ -66,6 +67,7 @@ int main(){
 	vector<string> l;
 	// for (int i = 0;i < 10; i++)
 		tb->insert(n, vv);
+		tb2->insert(n, vv);
 	tb->showTB(1);
 
 	// //test update
@@ -100,26 +102,30 @@ int main(){
 	vector<string> tables;
 	CondSql cond1;
 
-	AttrItem item11("", "dhy");
-	AttrItem item22("", "");
+	AttrItem item11("", "xuhan");
+	AttrItem item22("test2", "xuhan");
 	Expression expr11;
-	expr11.str = "\'%a%b%\'";
+	//expr11.str = "\'%a%b%\'";
 	CondItem conditem1("=", item11, item22, expr11);
 
 	cond1.conditions.push_back(conditem1);
-	AttrItem item12("", "*");
+	AttrItem item12("test2", "dhy");
+	AttrItem item13("", "xuhan");
 	attrs.push_back(item12);
+	attrs.push_back(item13);
 	tables.push_back("test");
 	vector<string> op;
-	op.push_back("sum");
-	op.push_back("avg");
-	op.push_back("max");
-	op.push_back("min");
+	// op.push_back("sum");
+	// op.push_back("avg");
+	// op.push_back("max");
+	// op.push_back("min");
 	vector<string> attrID;
-	attrID.push_back("xuhan");
-	attrID.push_back("xuhan");
-	attrID.push_back("xuhan");
-	attrID.push_back("xuhan");
-	tb->select(attrs, cond1, op, attrID);
+	// attrID.push_back("xuhan");
+	// attrID.push_back("xuhan");
+	// attrID.push_back("xuhan");
+	// attrID.push_back("xuhan");
+	vector<Table*> tt;
+	tt.push_back(tb2);
+	tb->select(attrs, cond1, op, attrID, tt);
 	//cout << tb->conform(cond1, 1, 0) << endl;
 }
