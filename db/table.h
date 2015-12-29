@@ -183,7 +183,6 @@ public:
     }
 
     void saveFile() {
-        cout<<"save File "<<tbName<<"\n";
         bpm->close();
         fm->closeFile(_fileID);
     }
@@ -319,7 +318,7 @@ public:
             }
         }
         // writeItem
-        bt->insert(attribute.attributes["xuhan"].value, pair<int, int>(emptyPage, emptyRid));
+        //bt->insert(attribute.attributes["xuhan"].value, pair<int, int>(emptyPage, emptyRid));
         _writeItem(emptyPage, emptyRid, attribute);
         return 1;
     }
@@ -707,7 +706,7 @@ public:
 
     map<string, vector<int> > pID;
     map<string, vector<int> > rankID;
-    void select(vector<AttrItem> attrs, CondSql cond, vector<string> op, vector<string> attrID, vector<Table*> tb){
+    void select(vector<AttrItem> attrs, CondSql cond, vector<string> op, vector<string> attrID, string groupName, vector<Table*> tb){
         if(op.size() != 0){
             cout<<"+------------------------------+\n";
             for(int i = 0; i < op.size(); i++){
@@ -741,11 +740,12 @@ public:
                     rankID.erase(rankID.begin(),rankID.end());
                     if(conform(cond, i, j, tb)){
                         show(attrs, i, j, tb);
+                        cout<<"-------------------------\n";
                     }
                 }
             }
         }
-        bt->print(cout);
+        // bt->print(cout);
     }
 
     void show(vector<AttrItem> attrs, int i, int j, vector<Table*> tb){ // i->pageID, j->rID
@@ -754,7 +754,6 @@ public:
         bpm->access(index);
         char* bb = (char*)b;
         bb += j*length;
-        cout<<"+------------------------------+\n";
         for(int k = 0; k < attrs.size(); k++){ //select * from
             if(attrs[k].attrName == "*"){
                 for(int m = 0; m < sequence.size(); m++){
@@ -799,7 +798,7 @@ public:
                 break;
             }
             // not select * from
-            if(attrs[k].tableName != ""){
+            if(attrs[k].tableName!="" && attrs[k].tableName!=tbName){
                 int nn;
                 for(nn = 0; nn < tb.size(); nn++){
                     if(attrs[k].tableName == tb[nn]->tbName){
@@ -810,10 +809,8 @@ public:
                 vector<AttrItem> attrss;
                 attrss.push_back(attrTrans);
                 for(int ii = 0; ii < pID[tb[nn]->tbName].size(); ii++){
-                    cout << "*** " << tb[nn]->tbName << " ***" << endl;
+                    // cout << "*** " << tb[nn]->tbName << " ***" << endl;
                     tb[nn]->show(attrss, pID[tb[nn]->tbName][ii], rankID[tb[nn]->tbName][ii], vector<Table*>());
-                    cout<<"+******************************+\n";
-                    cout<<"+------------------------------+\n";
                 }
             }
             else{
@@ -822,6 +819,7 @@ public:
                 int off = offset[attrs[k].attrName];
                 int type = temp->getType();
                 int m;
+                cout<<"*** "<<tbName<<" ***\n";
                 for(int sk = 0; sk < sequence.size(); sk++){
                     if(attrs[k].attrName == sequence[sk]){
                         m = sk;

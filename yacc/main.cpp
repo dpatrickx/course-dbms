@@ -194,7 +194,23 @@ void initDB(string dbPath) {
     }
 }
 
-void initDBManager(string dbManPath) {}
+void initDBManager(string dbManPath) {
+    DB db;
+    int fileID;
+    int index;
+    FileManager* fm = new FileManager();
+    BufPageManager* bpm = new BufPageManager(fm);
+    BufType b;
+    char* bb;
+    string tempStr;
+    int tempInt;
+
+    fm->openFile(dbManPath.c_str(), fileID);
+    b = bpm->getPage(fileID, 0, index);
+    bpm->access(index);
+
+    
+}
 
 void saveFile() {
     DBManager* manager = DBManager::instance("./");
@@ -210,7 +226,17 @@ void saveFile() {
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     BufType b;
-    // write begin
+    // write database manager
+    fm->createFile("./mysql/this.txt");
+    fm->openFile("./mysql/this.txt", fileID);
+    b = bpm->getPage(fileID, 0, index);
+    bpm->markDirty(index);
+    bb = (char*)(b);
+    for (int i = 0; i < manager->dbName.size(); i++)
+        bb += writeStr(manager->dbName[i]);
+    bpm->close();
+    fm->closeFile(fileID);
+    // write back
     map<string, DB*>::iterator it;
     map<string, Table*>::iterator its;
     string fileName = "./mysql/";
@@ -222,9 +248,9 @@ void saveFile() {
         mkdir((fileName.c_str()), S_IRWXU);
         // write this database
         string dbFilePath = fileName;
-        fileName += "this.txt";
-        fm->createFile(fileName.c_str());
-        fm->openFile(fileName.c_str(), fileID);
+        dbFilePath += "this.txt";
+        fm->createFile(dbFilePath.c_str());
+        fm->openFile(dbFilePath.c_str(), fileID);
         b = bpm->getPage(fileID, 0, index);
         bpm->markDirty(index);
         // write begin
@@ -245,7 +271,6 @@ void saveFile() {
             string txtName = fileName;
             txtName += table->tbName;
             txtName += ".txt";
-            cout<<txtName<<endl;
             fm->createFile(txtName.c_str());
             fm->openFile(txtName.c_str(), fileID);
             b = bpm->getPage(fileID, pageID, index);
@@ -253,7 +278,6 @@ void saveFile() {
             // _fileID
             b += writeInt(b, table->_fileID);
             // length
-            cout<<"length = "<<table->length<<endl;
             b += writeInt(b, table->length);
             // slotNum
             b += writeInt(b, table->slotNum);
@@ -349,6 +373,8 @@ int main()
     cin>>a;
     if (a == 0) {
         initTable("./mysql/test/customer.txt");
+        initTable("./mysql/test/book.txt");
+        initTable("./mysql/test/orders.txt");
         return 0;
     } else if (a == 1) {
         initDB("./mysql/test/this.txt");

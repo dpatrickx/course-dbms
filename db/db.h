@@ -75,8 +75,13 @@ public:
     }
 
     void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
+        vector<Table*> vec;
         Table* tb = getTable(t[0]);
-        tb->select(attrs, cond, opVec, attrId, gName);
+        map<string, Table*>::iterator it;
+        for (it = tbMap.begin(); it != tbMap.end(); it++) {
+            vec.push_back(it->second);
+        }
+        tb->select(attrs, cond, opVec, attrId, gName, vec);
     }
 
     void descTB(string name) {

@@ -2,11 +2,23 @@ create database test;
 use database test;
 
 CREATE TABLE customer (
-id int(10) NOT NULL,
-name varchar(25),
-gender varchar(1) NOT NULL,
-check (gender in ('F','M')),
-PRIMARY KEY (id)
+	id int(10) NOT NULL,
+	name varchar(25),
+	gender varchar(1) NOT NULL,
+	check (gender in ('F','M')),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE book (
+	id int(10) NOT NULL,
+	name varchar(25),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE orders (
+	id int(10) NOT NULL,
+	name varchar(25),
+	PRIMARY KEY (id)
 );
 
 insert into customer values
@@ -15,13 +27,19 @@ insert into customer values
 (3, '1name3', 'M'),
 (4, '1name', 'M');
 
-SELECT MIN(id), max(id) FROM customer where id = 1;
-SELECT max(id) FROM customer;
-SELECT sum(id) FROM customer;
-SELECT avg(id) FROM customer group by id;
+insert into book values
+(1, 'name1'),
+(2, 'name2'),
+(4, 'name3'),
+(5, 'name4');
 
-select * from customer where name = '%name%';
-select * from customer where name = 'name%';
-select * from customer where name = '%name';
+insert into orders values
+(1, 'name1'),
+(2, 'name2'),
+(4, 'name3'),
+(5, 'name4');
+
+select customer.name, book.name, orders.name, customer.id from orders, book, customer where customer.name = book.name and orders.name = customer.name;
 
 desc table customer;
+desc table book;
