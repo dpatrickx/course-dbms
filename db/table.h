@@ -83,6 +83,49 @@ public:
 
     Table() {}
 
+    void init() {
+        // hashmap bpm fm
+        cout<<"init\n";
+        int off = offset[priKey];
+        int index;
+        fm = new FileManager();
+        fm->openFile((path+"/"+tbName+".txt").c_str(), _fileID);
+        bpm = new BufPageManager(fm);
+        BufType b = bpm->getPage(_fileID, 0, index);
+        bpm->access(index);
+        int pageNum = b[0];
+        for (int i = 1; i <= pageNum; i++) {
+            BufType ab = bpm->getPage(_fileID, i, index);
+            bpm->access(index);
+            char* abb = (char*)(ab);
+            int* bbb = (int*) (abb+freeNumPos);
+            int freeNum = bbb[0];
+            cout<<"freeNum = "<<freeNum<<endl;
+            if (freeNum == slotNum)
+                continue;
+            abb += freeMapPos;
+            for (int j = 0; j < slotNum; j++) {
+                if (j>0 && j%8==0)
+                    abb++;
+                int temp = abb[0];
+                temp >>= (7-(j%8));
+                temp &= 1;
+                if (temp == 1) {
+                    char* ba = (char*)(ab);
+                    ba += j*length;
+                    ba += off;
+                    int aa = ba[0];
+                    stringstream ss;
+                    ss << aa;
+                    string a;
+                    ss >> a;
+                    hashMap.insert(a);
+                    cout<<"init id: "<<a<<endl;
+                }
+            }
+        }
+    }
+
     stx::btree<int, pair<int, int> >* bt;
 
     Table(const TableCon& c, string n, string root) {
@@ -164,6 +207,7 @@ public:
         int* bbb;
         for (int i = pageNum;i >= 0;i--) {
             b = bpm->allocPage(_fileID, i, index, false);
+            bpm->markDirty(index);
             // set array b to 0, b[2048]
             memset(b, 0, 2048*sizeof(uint));
             bb = (char*)b;
@@ -304,6 +348,7 @@ public:
                 bb[num+freeMapPos] |= (1<<(7-(i%8)));
                 freeNum--;
                 tempB[0] = freeNum;
+                cout<<"freeNum is "<<freeNum<<endl;
                 // check if the page is full
                 if (freeNum == 0) {
                     BufType c = bpm->getPage(_fileID, 0, index);

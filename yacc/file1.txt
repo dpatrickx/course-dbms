@@ -1,0 +1,43 @@
+create database test;
+use database test;
+
+CREATE TABLE customer (
+	id int(10) NOT NULL,
+	name varchar(25),
+	gender varchar(1) NOT NULL,
+	check (gender in ('F','M')),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE book (
+	id int(10) NOT NULL,
+	name varchar(25),
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE orders (
+	id int(10) NOT NULL,
+	name varchar(25),
+	PRIMARY KEY (id)
+);
+
+insert into customer values
+(1, 'name1', 'F'),
+(2, 'name2', 'M'),
+(3, '1name3', 'M'),
+(4, '1name', 'M');
+
+insert into book values
+(1, 'name1'),
+(2, 'name2'),
+(4, 'name3'),
+(5, 'name4');
+
+insert into orders values
+(1, 'name1'),
+(2, 'name2'),
+(4, 'name3'),
+(5, 'name4');
+
+desc table customer;
+desc table book;

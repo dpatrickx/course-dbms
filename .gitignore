@@ -9,3 +9,4 @@ yacc/lex.yy.c
 main
 *.exe
 *.o
+mysql/

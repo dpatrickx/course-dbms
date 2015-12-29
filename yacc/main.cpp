@@ -1,6 +1,7 @@
 #include "main.h"
 #include "yacc.tab.h"
 #include "../db/sql.h"
+#include "../db/table.h"
 #include "../db/dbManager.h"
 
 inline int writeInt(uint* bb, int a) {
@@ -41,8 +42,8 @@ inline string readStr(char* bb) {
     return res;
 }
 
-void initTable(string txtName) {
-    Table table;
+void initTable(Table* table, string txtName) {
+    cout<<"tb path is "<<txtName<<endl;
     int fileID;
     int index;
     int pageID = 0;
@@ -58,22 +59,27 @@ void initTable(string txtName) {
     bpm->access(index);
     // read begin
     // _fileID length slotNum bitSize typeNum pageNum nullPos freeNumPos freeMapPos
-    for (int i = 0; i < 9; i++) {
-        cout<<readInt(b)<<endl;
-        b++;
-    }
+    table->_fileID = readInt(b); b++;
+    table->length = readInt(b); b++;
+    table->slotNum = readInt(b); b++;
+    table->bitSize = readInt(b); b++;
+    table->typeNum = readInt(b); b++;
+    table->pageNum = readInt(b); b++;
+    table->nullPos = readInt(b); b++;
+    table->freeNumPos = readInt(b); b++;
+    table->freeMapPos = readInt(b); b++;
     // tbName
     bb = (char*)(b);
     tempStr = readStr(bb);
-    cout<<"tbName = ---"<<tempStr<<"---\n";
+    table->tbName = tempStr;
     bb += (tempStr.size()+1);
     // path
     tempStr = readStr(bb);
-    cout<<"path = ---"<<tempStr<<"---\n";
+    table->path = tempStr;
     bb += (tempStr.size()+1);
     // priKey
     tempStr = readStr(bb);
-    cout<<"priKey = ---"<<tempStr<<"---\n";
+    table->priKey = tempStr;
     bb += (tempStr.size()+1);
     // offset
     b = (uint*)(bb);
@@ -83,25 +89,22 @@ void initTable(string txtName) {
         // read string
         bb = (char*)(b);
         tempStr = readStr(bb);
-        cout<<ii<<": "<<tempStr<<"---";
         bb += (tempStr.size()+1);
         // read int
         b = (uint*)(bb);
         tempInt = readInt(b);
         b++;
-        cout<<tempInt<<endl;
+        table->offset.insert(pair<string, int>(tempStr, tempInt));
     }
     // sequence
-    cout<<"sequence begin\n";
     int sequSize = readInt(b);
     b++;
     bb = (char*)(b);
     for (int ii = 0; ii < sequSize; ii++) {
         tempStr = readStr(bb);
         bb += (tempStr.size()+1);
-        cout<<tempStr<<endl;
+        table->sequence.push_back(tempStr);
     }
-    cout<<"sequence end\n";
     // check
     b = (uint*)(bb);
     int checkSize = readInt(b);
@@ -110,61 +113,64 @@ void initTable(string txtName) {
     for (int ii = 0; ii < checkSize; ii++) {
         tempStr = readStr(bb);
         bb += (tempStr.size()+1);
-        cout<<tempStr<<": ";
         b = (uint*)(bb);
         int tempSize = readInt(b);
         b++;
         bb = (char*)(b);
+        vector<string> vec;
         for (int jj = 0; jj < tempSize; jj++) {
-            tempStr = readStr(bb);
-            bb += (tempStr.size()+1);
-            cout<<tempStr<<", ";
+            string sss = readStr(bb);
+            bb += (sss.size()+1);
+            vec.push_back(sss);
         }
-        cout<<endl;
+        table->check.insert(pair<string, vector<string> >(tempStr, vec));
     }
     // example
         // length
     b = (uint*)(bb);
-    cout<<"example.length = "<<readInt(b)<<endl;
+    table->example.length = readInt(b);
     b++;
         // active
-    cout<<"example.active = "<<readInt(b)<<endl;
+    tempInt = readInt(b);
+    if (tempInt == 1)
+        table->example.active = true;
+    else
+        table->example.active = false;
     b++;
         // tableName
     bb = (char*)(b);
     tempStr = readStr(bb);
-    cout<<"example.tableName = "<<tempStr<<endl;
+    table->example.tableName = tempStr;
     bb += (tempStr.size()+1);
         // map<string, Type> attributes
     b = (uint*)(bb);
     tempInt = readInt(b);
-    cout<<"example.attributes.length = "<<tempInt<<endl;
     b++;
     bb = (char*)(b);
     for (int ii = 0; ii < tempInt; ii++) {
         tempStr = readStr(bb);
         bb += (tempStr.size()+1);
-        cout<<"attr"<<ii<<".name = "<<tempStr<<endl;
         b = (uint*)(bb);
-        cout<<".length = "<<readInt(b);
-        b++;
-        cout<<".type = "<<readInt(b);
-        b++;
-        cout<<".value = "<<readInt(b);
-        b++;
-        cout<<".number = "<<readInt(b);
-        b++;
-        cout<<".notNull = "<<readInt(b);
-        b++;
+        Type type;
+        type.length = readInt(b); b++;
+        type.type = readInt(b); b++;
+        type.value = readInt(b); b++;
+        type.number = readInt(b); b++;
+        int notnull = readInt(b); b++;
+        if (notnull == 1)
+            type.notNull = true;
+        else
+            type.notNull = false;
         bb = (char*)b;
-        tempStr = readStr(bb);
-        bb += (tempStr.size()+1);
-        cout<<".str = "<<tempStr<<endl;
+        string strStr = readStr(bb);
+        bb += (strStr.size()+1);
+        type.str = strStr;
+        table->example.attributes.insert(pair<string, Type>(tempStr, type));
     }
+    table->init();
 }
 
-void initDB(string dbPath) {
-    DB db;
+void initDB(DB* db, string dbPath) {
     int fileID;
     int index;
     FileManager* fm = new FileManager();
@@ -173,16 +179,18 @@ void initDB(string dbPath) {
     char* bb;
     string tempStr;
     int tempInt;
-
-    fm->openFile(dbPath.c_str(), fileID);
+    string txtPath = dbPath;
+    txtPath += "this.txt";
+    cout<<"db path is "<<txtPath<<endl;
+    fm->openFile(txtPath.c_str(), fileID);
     b = bpm->getPage(fileID, 0, index);
     bpm->access(index);
 
     bb = (char*)(b);
     tempStr = readStr(bb);
     bb += (tempStr.size()+1);
+    db->dbName = tempStr;
     cout<<"dbName = "<<tempStr<<endl;
-    db.dbName = tempStr;
     b = (uint*)(bb);
     int tableSize = readInt(b);
     b++;
@@ -191,10 +199,21 @@ void initDB(string dbPath) {
         tempStr = readStr(bb);
         bb += (tempStr.size()+1);
         cout<<"table name is "<<tempStr<<endl;
+        db->tbName.insert(tempStr);
+    }
+    // add table
+    for (int i = 0; i < db->tbName.size(); i++) {
+        string tablePath = dbPath;
+        tablePath += db->tbName[i];
+        tablePath += ".txt";
+        Table* table = new Table();
+        initTable(table, tablePath);
+        db->tbMap.insert(map<string, Table*>::value_type(db->tbName[i], table));
     }
 }
 
 void initDBManager(string dbManPath) {
+    DBManager* manager = DBManager::instance("./");
     DB db;
     int fileID;
     int index;
@@ -209,7 +228,26 @@ void initDBManager(string dbManPath) {
     b = bpm->getPage(fileID, 0, index);
     bpm->access(index);
 
-    
+    int size = readInt(b);
+    b++;
+    bb = (char*)(b);
+    cout<<size<<"databases:\n";
+    for (int i = 0; i < size; i++) {
+        tempStr = readStr(bb);
+        bb += (tempStr.size()+1);
+        manager->dbName.insert(tempStr);
+        cout<<tempStr<<endl;
+    }
+    cout<<"----------\n";
+    // add databases
+    for (int i = 0; i < manager->dbName.size(); i++) {
+        string dbPath = "./mysql/";
+        dbPath += manager->dbName[i];
+        dbPath += "/";
+        DB* db = new DB();
+        initDB(db, dbPath);
+        manager->dbMap.insert(map<string, DB*>::value_type(manager->dbName[i], db));
+    }
 }
 
 void saveFile() {
@@ -222,7 +260,7 @@ void saveFile() {
     string tempStr;
     int tempInt;
     char* bb;
-    mkdir(("./mysql/"), S_IRWXU);
+    mkdir(("mysql/"), S_IRWXU);
     FileManager* fm = new FileManager();
     BufPageManager* bpm = new BufPageManager(fm);
     BufType b;
@@ -231,9 +269,10 @@ void saveFile() {
     fm->openFile("./mysql/this.txt", fileID);
     b = bpm->getPage(fileID, 0, index);
     bpm->markDirty(index);
+    b += writeInt(b, manager->dbName.size());
     bb = (char*)(b);
     for (int i = 0; i < manager->dbName.size(); i++)
-        bb += writeStr(manager->dbName[i]);
+        bb += writeStr(bb, manager->dbName[i]);
     bpm->close();
     fm->closeFile(fileID);
     // write back
@@ -371,21 +410,15 @@ int main()
 {
     int a;
     cin>>a;
-    if (a == 0) {
-        initTable("./mysql/test/customer.txt");
-        initTable("./mysql/test/book.txt");
-        initTable("./mysql/test/orders.txt");
-        return 0;
-    } else if (a == 1) {
-        initDB("./mysql/test/this.txt");
-        return 0;
-    } else if (a == 2) {
+    if (a == 0)
         initDBManager("./mysql/this.txt");
+    else {
+        system("rm -r mysql");
+        system("rm -r test");
     }
     const char* sFile = "file.txt";
     FILE* fp = fopen(sFile, "r");
-    if(fp == NULL)
-    {
+    if(fp == NULL) {
         printf("cannot open %s\n", sFile);
         return -1;
     }
@@ -395,7 +428,8 @@ int main()
     yyparse();
     puts("-----end parsing");
     fclose(fp);
-    saveFile();
+    if (a != 0)
+        saveFile();
     return 0;
 }
 
