@@ -126,10 +126,10 @@ public:
         }
     }
 
-    stx::btree<int, pair<int, int> >* bt;
+    stx::btree<int, pair<int, int> >* btr;
 
     Table(const TableCon& c, string n, string root) {
-        bt = new stx::btree<int, pair<int, int> >();
+        btr = new stx::btree<int, pair<int, int> >();
         // set priKey
         priKey = c.priKey;
         // set name
@@ -944,10 +944,71 @@ public:
                 }
             }
         }
+        else{
+            return 1;
+        }
         return 0;
     }
 
-    void update(vector<CondItem> set, CondSql cond) {
+    void update(vector<CondItem> set, CondSql cond, vector<Table*> tb) {
+        for(int k = 0; k < set.size(); k++){
+            int found;
+            if((found = set[k].attr1.attrName.find("_")) != string::npos){
+                string s = set[k].attr1.attrName;
+                string delim = "_";
+                vector<string> retu;
+                size_t last = 0;  
+                size_t index = s.find_first_of(delim,last);  
+                if (index!=std::string::npos)  
+                {  
+                    retu.push_back(s.substr(last,index-last));
+                    last=index+1;  
+                    index=s.find_first_of(delim,last);  
+                } 
+                else {
+                    break;
+                } 
+                if (index-last>0)  
+                {  
+                    retu.push_back(s.substr(last,index-last));  
+                }
+                else {
+                    break;
+                }
+                int nn = 0;
+                for(nn = 0; nn < tb.size(); nn++){
+                    if(retu[0] == tb[nn]->tbName){
+                        break;
+                    }
+                }
+                if(retu[1] != tb[nn]->priKey){
+                    break;
+                }
+                if(nn != tb.size()){
+                    int type = example.getAttr(s)->getType();
+                    if(set[k].attr2.isNull()){
+                        if(type == INTE){
+                            stringstream ss;
+                            ss<<set[k].expression.value;
+                            string sk;
+                            ss>>sk;
+                            if(tb[nn]->hashMap.check(sk)){
+                                cout << "Against " << tb[nn]->tbName << " Key Restriction" << endl;
+                                return;
+                            }
+                        }
+                        else if(type == STRING){
+                            string sk;
+                            sk = set[k].expression.str;
+                            if(tb[nn]->hashMap.check(sk)){
+                                cout << "Against " << tb[nn]->tbName << " Key Restriction" << endl;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for(int i = 1; i <= pageNum; i++){
             int index;
             BufType bt = bpm->getPage(_fileID, i, index);
@@ -988,10 +1049,35 @@ public:
                             Type* temp = new Type();
                             temp = example.getAttr(set[k].attr1.attrName);
                             int type = temp->getType();
+                            if(set[k].attr1.attrName == priKey){
+                                if(type == INTE){
+                                    if(set[k].attr2.isNull()){
+                                        stringstream ss;
+                                        ss<<set[k].expression.value;
+                                        string sk;
+                                        ss>>sk;
+                                        if(hashMap.check(sk)){
+                                            cout << "Update Primary Key Error1" << endl;
+                                            return;
+                                        }
+                                    }
+                                    else if(set[k].expression.isNull()){
+                                        stringstream sss;
+                                        sss<<((Integer*)(waitUpdate->getAttr(set[k].attr2.attrName)))->value;
+                                        string sk;
+                                        sss>>sk;
+                                        if(hashMap.check(sk)){
+                                            cout << "Update Primary Key Error2" << endl;
+                                            cont = 0;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                             if(set[k].attr2.isNull()){
                                 if(set[k].expression.str == "null"){
                                     if(temp->notNull){
-                                        cout << "Update Error" << endl;
+                                        cout << "Update NULL Error" << endl;
                                         cont = 0;
                                         break;
                                     }
