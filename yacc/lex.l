@@ -21,13 +21,14 @@ valueitem   ({yin}({other_operator}|{nondigit}|{digit})*+{yin})
 blank_chars ([ \f\r\t\v]+)
 comment     ("--"[^\r\n]*{newline})
 SIMPLE_OPERATOR     ("+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":")
-other_operator      (" "|"+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"&"|"$"|"@"|"#"|"<"|">"|"|"|"\\"|"\""|"="|"`"|"~"|"^"|"_")
+other_operator      (" "|"+"|"-"|"*"|"/"|"%"|"."|","|";"|"!"|"("|")"|"["|"]"|"{"|"}"|"?"|":"|"&"|"$"|"@"|"#"|"<"|">"|"|"|"\\"|"\""|"="|"`"|"~"|"^"|"\t"|"_")
 EXPRESSION  ([{SIMPLE_OPERATOR}A-Za-z]+)
 yin         ("\'")
 %%
 ">"                                 {   yylval.m_sId = ">";         return JUDGEOP;     }
 "<"                                 {   yylval.m_sId = "<";         return JUDGEOP;     }
 "="                                 {   yylval.m_sId = "=";         return JUDGEOP;     }
+"LIKE|like"                                 {   yylval.m_sId = "=";         return JUDGEOP;     }
 "INNER"|"inner"                     {   yylval.m_sId = "inner";     return IOKIND;      }
 "OUTER"|"outer"                     {   yylval.m_sId = "outer";     return IOKIND;      }
 "AND"|"and"                         {   yylval.m_sId = "and";       return CONNOP;      }
@@ -65,7 +66,8 @@ yin         ("\'")
 "BOOL"|"bool"                       {   yylval.m_sId = "bool";      return TYPE;        }
 "DESC"|"desc"                       {   yylval.m_sId = "desc";      return DESC;        }
 "CHECK"|"check"                     {   yylval.m_sId = "check";     return CHECK;       }
-"IN"|"in"                           {   yylval.m_sId = "in";        return IN;          }
+"IN"|"in"                           {   yylval.m_sId = "in";        return GROUPOP;          }
+"COUNT"|"count"                         {   yylval.m_sId = "count";       return GROUPOP;         }
 "SUM"|"sum"                         {   yylval.m_sId = "sum";       return GROUPOP;         }
 "AVG"|"avg"                         {   yylval.m_sId = "avg";       return GROUPOP;         }
 "MAX"|"max"                         {   yylval.m_sId = "max";       return GROUPOP;         }

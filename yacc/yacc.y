@@ -108,7 +108,12 @@ droptbsql:
         $$.work();
     };
 descsql:
-    DESC TABLE IDENTIFIER ';' {
+    DESC IDENTIFIER ';' {
+        $$.init($2);
+        $$.display();
+        $$.work();
+    }
+    | DESC TABLE IDENTIFIER ';' {
         $$.init($3);
         $$.display();
         $$.work();
@@ -187,24 +192,28 @@ tablecon:
         $$.type.push_back($2);
         $$.length.push_back($4);
         $$.notNull.push_back(true);
+        $$.priKey = "";
     }
     | IDENTIFIER TYPE '(' INTEGER ')' ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back($4);
         $$.notNull.push_back(false);
+        $$.priKey = "";
     }
     | IDENTIFIER TYPE CONNOP NULLL ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back("0");
         $$.notNull.push_back(true);
+        $$.priKey = "";
     }
     | IDENTIFIER TYPE ')' {
         $$.name.push_back($1);
         $$.type.push_back($2);
         $$.length.push_back("0");
         $$.notNull.push_back(false);
+        $$.priKey = "";
     }
     | CHECK '(' IDENTIFIER IN '(' checkval ')' ')' ',' tablecon {
         $$.checkAttrs.push_back($3);
@@ -220,6 +229,7 @@ tablecon:
     | CHECK '(' IDENTIFIER IN '(' checkval ')' ')' {
         $$.checkAttrs.push_back($3);
         $$.checkVal.push_back($6);
+        $$.priKey = "";
     }
     | PRIMARY KEY '(' IDENTIFIER ')' ')' {
         $$.priKey = $4;
@@ -338,6 +348,10 @@ ops:
     | GROUPOP '(' IDENTIFIER ')' {
         $$.ops.push_back($1);
         $$.names.push_back($3);
+    }
+    | GROUPOP '(' '*' ')' {
+        $$.ops.push_back($1);
+        $$.names.push_back($3);
     };
 attrsql:
     '*' {
@@ -402,13 +416,13 @@ conditem:
     attritem IS NULLL {
         AttrItem attr2;
         Expression expre;
-        expre.str = "NULLLL";
+        expre.str = $3;
         $$.init("=", $1, attr2, expre);
     }
     | attritem IS CONNOP NULLL {
         AttrItem attr2;
         Expression expre;
-        expre.str = "NULLLL";
+        expre.str = $3;
         $$.init(">", $1, attr2, expre);
     }
     | attritem JUDGEOP expression {

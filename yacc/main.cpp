@@ -43,7 +43,6 @@ inline string readStr(char* bb) {
 }
 
 void initTable(Table* table, string txtName) {
-    cout<<"tb path is "<<txtName<<endl;
     int fileID;
     int index;
     int pageID = 0;
@@ -181,7 +180,6 @@ void initDB(DB* db, string dbPath) {
     int tempInt;
     string txtPath = dbPath;
     txtPath += "this.txt";
-    cout<<"db path is "<<txtPath<<endl;
     fm->openFile(txtPath.c_str(), fileID);
     b = bpm->getPage(fileID, 0, index);
     bpm->access(index);
@@ -190,7 +188,6 @@ void initDB(DB* db, string dbPath) {
     tempStr = readStr(bb);
     bb += (tempStr.size()+1);
     db->dbName = tempStr;
-    cout<<"dbName = "<<tempStr<<endl;
     b = (uint*)(bb);
     int tableSize = readInt(b);
     b++;
@@ -198,7 +195,6 @@ void initDB(DB* db, string dbPath) {
     for (int i = 0; i < tableSize; i++) {
         tempStr = readStr(bb);
         bb += (tempStr.size()+1);
-        cout<<"table name is "<<tempStr<<endl;
         db->tbName.insert(tempStr);
     }
     // add table
@@ -406,17 +402,16 @@ void saveFile() {
     }
 }
 
-int main()
+int main(int argc, char** argv)
 {
     int a;
     cin>>a;
     if (a == 0)
         initDBManager("./mysql/this.txt");
     else {
-        system("rm -r mysql");
-        system("rm -r test");
+        cout<<"-----------\n";
     }
-    const char* sFile = "file.txt";
+    const char* sFile = argv[1];
     FILE* fp = fopen(sFile, "r");
     if(fp == NULL) {
         printf("cannot open %s\n", sFile);
@@ -428,8 +423,8 @@ int main()
     yyparse();
     puts("-----end parsing");
     fclose(fp);
-    if (a != 0)
-        saveFile();
+    system("rm -r mysql");
+    saveFile();
     return 0;
 }
 

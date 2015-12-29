@@ -70,8 +70,13 @@ public:
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
             return;
         }
+        vector<Table*> vec;
+        map<string, Table*>::iterator it;
+        for (it = tbMap.begin(); it != tbMap.end(); it++) {
+            vec.push_back(it->second);
+        }
         Table* tb = getTable(name);
-        tb->insert(t, v);
+        tb->insert(t, v, vec);
     }
 
     void selectTB(vector<AttrItem> attrs, vector<string> t, CondSql cond, vector<string> opVec, vector<string> attrId, string gName) {
@@ -107,8 +112,13 @@ public:
             printf("ERROR 1051 (42S02): Unknown table '%s'\n", name.c_str());
             return;
         }
+        vector<Table*> vec;
+        map<string, Table*>::iterator it;
+        for (it = tbMap.begin(); it != tbMap.end(); it++) {
+            vec.push_back(it->second);
+        }
         Table* tb = getTable(name);
-        tb->update(set, cond);
+        tb->update(set, cond, vec);
     }
 };
 

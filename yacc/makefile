@@ -1,12 +1,12 @@
 LEX = flex
 YACC = bison
-CC = g++
+CC = g++ -std=c++11
 OBJECT = main
 CFLAGS = -g
 CXXFLAGS = -g
 
 $(OBJECT): lex.yy.o  yacc.tab.o ../db/dbManager.o  main.cpp
-	$(CC) lex.yy.o yacc.tab.o ../db/dbManager.o  main.cpp -o $(OBJECT)
+	$(CC)  lex.yy.o yacc.tab.o ../db/dbManager.o  main.cpp -o $(OBJECT)
 
 lex.yy.c: lex.l
 	$(LEX) lex.l

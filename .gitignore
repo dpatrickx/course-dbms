@@ -10,3 +10,5 @@ main
 *.exe
 *.o
 mysql/
+orderDB/
+*.sql

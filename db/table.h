@@ -11,6 +11,7 @@
 #include <string.h>
 #include <vector>
 #include <sstream>
+#include <regex>
 using namespace std;
 
 // one table stored in one file
@@ -85,12 +86,13 @@ public:
 
     void init() {
         // hashmap bpm fm
-        cout<<"init\n";
         int off = offset[priKey];
         int index;
         fm = new FileManager();
         fm->openFile((path+"/"+tbName+".txt").c_str(), _fileID);
         bpm = new BufPageManager(fm);
+        if (priKey == "")
+            return;
         BufType b = bpm->getPage(_fileID, 0, index);
         bpm->access(index);
         int pageNum = b[0];
@@ -100,7 +102,6 @@ public:
             char* abb = (char*)(ab);
             int* bbb = (int*) (abb+freeNumPos);
             int freeNum = bbb[0];
-            cout<<"freeNum = "<<freeNum<<endl;
             if (freeNum == slotNum)
                 continue;
             abb += freeMapPos;
@@ -114,13 +115,13 @@ public:
                     char* ba = (char*)(ab);
                     ba += j*length;
                     ba += off;
-                    int aa = ba[0];
+                    uint* zz = (uint*)(ba);
+                    uint aa = zz[0];
                     stringstream ss;
                     ss << aa;
                     string a;
                     ss >> a;
                     hashMap.insert(a);
-                    cout<<"init id: "<<a<<endl;
                 }
             }
         }
@@ -348,7 +349,6 @@ public:
                 bb[num+freeMapPos] |= (1<<(7-(i%8)));
                 freeNum--;
                 tempB[0] = freeNum;
-                cout<<"freeNum is "<<freeNum<<endl;
                 // check if the page is full
                 if (freeNum == 0) {
                     BufType c = bpm->getPage(_fileID, 0, index);
@@ -376,7 +376,6 @@ public:
         BufType b = bpm->getPage(_fileID, pageID, index);
         char* bb = (char*)b;
         bpm->markDirty(index);
-
         int pos = freeMapPos;
         pos += (rID/8);
         rID %= 8;
@@ -401,7 +400,7 @@ public:
         cout<<tbName<<endl;
     }
 
-    void insert(vector<string> items, vector<vector<string> > value){
+    void insert(vector<string> items, vector<vector<string> > value, vector<Table*> tb){
         if(items.size() == 0){
             for(int i = 0; i < value.size(); i++){//every item
                 Attr* writeItems = new Attr();
@@ -440,6 +439,39 @@ public:
                             break;
                         }
                     }
+                    //restriction
+
+                    int found;
+                    if((found = itemName.find("_")) != string::npos){
+                        string s = itemName;
+                        string delim = "_";
+                        vector<string> retu;
+                        size_t last = 0;
+                        size_t index = s.find_first_of(delim,last);
+                        if (index!=std::string::npos)
+                        {
+                            retu.push_back(s.substr(last,index-last));
+                            last=index+1;
+                            index=s.find_first_of(delim,last);
+                        }
+                        if (index-last>0)
+                        {
+                            retu.push_back(s.substr(last,index-last));
+                        }
+                        int nn = 0;
+                        for(nn = 0; nn < tb.size(); nn++){
+                            if(retu[0] == tb[nn]->tbName){
+                                break;
+                            }
+                        }
+                        if(nn != tb.size()){
+                            if(!tb[nn]->hashMap.check(value[i][j])){
+                                conti = 1;
+                                break;
+                            }
+                        }
+                    }
+
                     //write
                     Type* exam = new Type();
                     exam = example.getAttr(itemName);
@@ -676,6 +708,8 @@ public:
                 cout << "MAX(" << attrID << "): " << mx << endl;
             else if(op == 4)
                 cout << "MIN(" << attrID << "): " << mn << endl;
+            else if(op == 5)
+                cout << "COUNT(" << attrID << "): " << num << endl;
         }
         else{
             map<string, int> g;
@@ -745,6 +779,8 @@ public:
                     cout << it->first << ": " << "MAX(" << attrID << "): " << it->second << endl;
                 else if(op == 4)
                     cout << it->first << ": " << "MIN(" << attrID << "): " << it->second << endl;
+                else if(op == 5)
+                    cout << it->first << ": " << "COUNT(" << attrID << "): " << num[it->first] << endl;
             }
         }
     }
@@ -766,6 +802,9 @@ public:
                 }
                 else if(op[i] == "min"){
                     operation(4, attrID[i], cond, groupName);
+                }
+                else if(op[i] == "count"){
+                    operation(5, attrID[i], cond, groupName);
                 }
             }
             return;
@@ -825,7 +864,7 @@ public:
                         int len = temp->length;
                         char c[len+10];
                         strncpy(c, bb+off, len);
-                        if(strcmp(c, "") != 0)
+                        if((bb+off)[0] != '\0')
                             cout << sequence[m] << ": " << c << endl;
                         else{
                             int poss = nullPos;
@@ -923,11 +962,18 @@ public:
                     if(conform(cond, i, j, vector<Table*>())){
                         int index;
                         BufType b = bpm->getPage(_fileID, i, index);
+                        char* bb = (char*)(b);
+                        bb += j*length;
+                        bb += offset[priKey];
+                        uint* bbb = (uint*)(bb);
+                        stringstream ss;
+                        int aaa = bbb[0];
+                        ss << aaa;
+                        string ttt;
+                        ss >> ttt;
+                        hashMap.remove(ttt);
                         bpm->markDirty(index);
                         removeItem(i, j);
-                    }
-                    else{
-                        cout << "Such Item Not Found" << endl;
                     }
                 }
             }
@@ -992,7 +1038,7 @@ public:
                             ss<<set[k].expression.value;
                             string sk;
                             ss>>sk;
-                            if(tb[nn]->hashMap.check(sk)){
+                            if(!tb[nn]->hashMap.check(sk)){
                                 cout << "Against " << tb[nn]->tbName << " Key Restriction" << endl;
                                 return;
                             }
@@ -1000,7 +1046,7 @@ public:
                         else if(type == STRING){
                             string sk;
                             sk = set[k].expression.str;
-                            if(tb[nn]->hashMap.check(sk)){
+                            if(!tb[nn]->hashMap.check(sk)){
                                 cout << "Against " << tb[nn]->tbName << " Key Restriction" << endl;
                                 return;
                             }
@@ -1097,6 +1143,11 @@ public:
                                         sss<<set[k].expression.value;
                                         string content;
                                         sss>>content;
+                                        if(set[k].expression.str != ""){
+                                            cont = 0;
+                                            cout << "Update Input Error" << endl;
+                                            break;
+                                        }
                                         if(isCheck(set[k].attr1.attrName, content) == 0){
                                             cont = 0;
                                             cout << "Update Check Error" << endl;
@@ -1105,6 +1156,11 @@ public:
                                         ((Integer*)temp)->value = set[k].expression.value;
                                     }
                                     else if(type == STRING){
+                                        if(set[k].expression.value != 0){
+                                            cont = 0;
+                                            cout << "Update Input Error" << endl;
+                                            break;
+                                        }
                                         if(isCheck(set[k].attr1.attrName, set[k].expression.str) == 0){
                                             cont = 0;
                                             cout << "Update Check Error" << endl;
@@ -1205,6 +1261,61 @@ public:
         bool ret = 1;
         for(int i = 0; i < cond.conditions.size(); i++){
             CondItem item = cond.conditions[i];
+            if(item.attr1.tableName != "" && item.attr1.tableName != tbName){
+                int nn = 0;
+                for(nn = 0; nn < tb.size(); nn++){
+                    if(item.attr1.tableName == tb[nn]->tbName)
+                        break;
+                }
+                AttrItem attri1("", item.attr1.attrName);
+                CondItem condi(item.judgeOp, attri1, item.attr2, item.expression);
+                CondSql condTrans;
+                condTrans.conditions.push_back(condi);
+                bool secondTb = 0;
+                map<string, vector<int> >::iterator p_it;
+                p_it = pID.find(tb[nn]->tbName);
+                if(p_it == pID.end()){
+                    for(int ii = 0; ii < tb[nn]->pageNum; ii++){
+                        int index;
+                        BufType bt = tb[nn]->bpm->getPage(tb[nn]->_fileID, ii, index);
+                        tb[nn]->bpm->access(index);
+                        char* bbt = (char*) bt;
+                        int jj = 0;
+                        for(jj = 0; jj < tb[nn]->slotNum; jj++){
+                            int pos = tb[nn]->freeMapPos;
+                            pos += (jj/8);
+                            int temp = jj%8;
+                            if (((bbt[pos]>>(7-temp))&1)){
+                                if(tb[nn]->conform(condTrans, ii, jj, tb)){
+                                    pID[tb[nn]->tbName].push_back(ii);
+                                    rankID[tb[nn]->tbName].push_back(jj);
+                                    secondTb = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+                else{
+                    for(int iii = 0; iii < pID[tb[nn]->tbName].size(); iii++){
+                        int ii = pID[tb[nn]->tbName][iii];
+                        int jj = rankID[tb[nn]->tbName][iii];
+                        if(tb[nn]->conform(condTrans, ii, jj, tb)){
+                            secondTb = 1;
+                        }
+                        else{
+                            vector<int>::iterator v_it = pID[tb[nn]->tbName].begin() + iii;
+                            pID[tb[nn]->tbName].erase(v_it);
+                            v_it = rankID[tb[nn]->tbName].begin() + iii;
+                            rankID[tb[nn]->tbName].erase(v_it);
+                        }
+                    }
+                }
+                if(secondTb == 0){
+                    ret = 0;
+                    break;
+                }
+                continue;
+            }
             if(item.judgeOp == "="){ // case = 
                 int type = test->getAttr(item.attr1.attrName)->getType();
                 if(type == INTE){
@@ -1408,39 +1519,34 @@ public:
                                 break;
                             }
                         }
-                        else if(item.expression.str.find("%") != string::npos){
-                            string s = item.expression.str;
+                        else if(item.expression.str.find("%") != string::npos || item.expression.str.find("_") != string::npos){
+                            string c = item.expression.str;
                             string delim = "%";
                             vector<string> retu;
-                            size_t last = 0;  
-                            size_t index = s.find_first_of(delim,last);  
-                            while (index!=std::string::npos)  
-                            {  
-                                retu.push_back(s.substr(last,index-last));
-                                last=index+1;  
-                                index=s.find_first_of(delim,last);  
-                            }  
-                            if (index-last>0)  
-                            {  
-                                retu.push_back(s.substr(last,index-last));  
+                            size_t last = 0;
+                            size_t index = c.find_first_of(delim,last);
+                            while (index!=std::string::npos)
+                            {
+                                retu.push_back(c.substr(last,index-last));
+                                last=index+1;
+                                index=c.find_first_of(delim,last);
                             }
+                            if (index-last>0)
+                            {
+                                retu.push_back(c.substr(last,index-last));
+                            }
+                            string s = retu[0];
+                            for(int i = 1; i < retu.size(); i++){
+                                s += (".*" + retu[i]);
+                            }
+                            int found = s.find("_", 0);
+                            while(found != std::string::npos){
+                                s[found] = '.';
+                                found = s.find("_", found+1);
+                            }
+                            regex pattern(s);
                             string compare = "\'" + ((Varchar*)test->getAttr(item.attr1.attrName))->str + "\'";
-                            int total = retu.size();
-                            int found = compare.find(retu[0]);
-                            if(found != 0){
-                                ret = 0;
-                                break;
-                            }
-                            found += retu[0].size();
-                            for(int p = 1; p < total; p++){
-                                int tt = compare.find(retu[p], found);
-                                if(tt == string::npos){
-                                    found = tt;
-                                    break;
-                                }
-                                found = tt + retu[p].size();
-                            }
-                            if(found == string::npos || found != compare.size()){
+                            if(!regex_match(compare, pattern)){
                                 ret = 0;
                                 break;
                             }

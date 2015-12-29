@@ -1,0 +1,27 @@
+use orderDB;
+
+insert into publisher values
+ (100008,'Oxbow Books Limited','CA'),
+ (100010,'Aardwolf Publishing','CA'),
+ (100012,'Miguel Angel Porrua','CA'),
+ (100013,'New Video Group Inc','CA');
+insert into book values
+ (200001,'Marias Diary (Plus S.)','Mark P. O. Morford',100082,5991,2530),
+ (200002,'Standing in the Shadows','Richard Bruce Wright',101787,2900,1860),
+ (200003,'Children of the Thunder','Carlo DEste',102928,3447,2154);
+
+insert into customer values
+ (300001,'CHAD CABELLO','F'),
+ (300002,'FAUSTO VANNORMAN','F'),
+ (300003,'JO CANNADY','M');
+
+INSERT INTO orders VALUES
+ (304403,209743,2),
+ (305481,202165,5),
+ (302765,214166,9),
+ (306895,204501,6);
+
+select * from orders;
+select * from publisher;
+select * from customer;
+select * from book;
