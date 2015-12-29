@@ -114,8 +114,8 @@ int main(){
 	CondItem conditem1("=", item11, item22, expr11);
 
 	cond1.conditions.push_back(conditem1);
-	AttrItem item12("test2", "dhy");
-	AttrItem item13("", "test2_xuhan");
+	AttrItem item12("test", "dhy");
+	AttrItem item13("test2", "test2_xuhan");
 	attrs.push_back(item12);
 	attrs.push_back(item13);
 	tables.push_back("test");

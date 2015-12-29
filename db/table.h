@@ -936,6 +936,9 @@ public:
                         break;
                     }
                 }
+                if(retu[1] != tb[nn]->priKey){
+                    break;
+                }
                 if(nn != tb.size()){
                     int type = example.getAttr(s)->getType();
                     if(set[k].attr2.isNull()){
